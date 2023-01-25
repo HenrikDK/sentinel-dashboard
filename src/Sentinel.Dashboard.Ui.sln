@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentinel.Dashboard", "Sentinel.Dashboard.Ui\Sentinel.Dashboard.Ui.csproj", "{25CE6F5A-706D-4689-9418-4FC1DDC265F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentinel.Dashboard.Test", "Sentinel.Dashboard.Ui.Test\Sentinel.Dashboard.Ui.Test.csproj", "{E2084236-CAA8-4127-AE98-693C6DA39819}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{25CE6F5A-706D-4689-9418-4FC1DDC265F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25CE6F5A-706D-4689-9418-4FC1DDC265F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2084236-CAA8-4127-AE98-693C6DA39819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2084236-CAA8-4127-AE98-693C6DA39819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2084236-CAA8-4127-AE98-693C6DA39819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2084236-CAA8-4127-AE98-693C6DA39819}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
