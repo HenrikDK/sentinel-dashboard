@@ -132,6 +132,9 @@
             })
           }
         },
+        toTimeAgo(value){
+          return moment(value).fromNow();
+        },        
         populateServices: function (){
           if (this.$data.services && this.$data.services.length > 0 ) return;
           let chart = this.$refs.overview.chart;
