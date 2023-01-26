@@ -10,8 +10,10 @@
             <div class="flex justify-center">
                 <div>
                     <ul class="list-none, pl-0">
-                        <li v-for="env in environments">
-                            <a class="menu-link-brand font-bold no-underline text-4xl max-w-full block p-2" :href="`/environments/${env}/overview`"> {{ env }}</a>
+                        <li v-for="e in environments">
+                            <router-link :to="{ name: 'overview', params: { env: e }}" class="menu-link-brand font-bold no-underline text-4xl max-w-full block p-2">
+                                {{ e }}
+                            </router-link>
                         </li>
                     </ul>
                 </div>
@@ -29,14 +31,11 @@
                 podData: [],
             }
         },
-        props: ['namespace', 'search'],        
+        props: ['environments'],        
         computed: {},
-        async mounted() {
-            var host = window.location.origin;
-        },
     };
     
-    routes.push({path:'/', component: components["environments"]})    
+    routes.push({path:'/', name:"environments", component: components["environments"]})    
 </script>
 
 <style>
