@@ -1,0 +1,23 @@
+/* frosted style */
+
+.bg-glass {
+  box-shadow: 0 2px 2px -1px rgb(0 0 0 / 10%);
+  border-bottom: solid 0.0625rem rgb(233, 237, 235);
+  background-color: rgba(255, 255, 255, .5);
+  backdrop-filter: blur(7px);
+}
+
+.text-brand {
+  color: rgb(180, 40, 48);
+}
+
+/* Environments selector drop down */
+
+.menu-link-brand{
+  color: rgba(180, 40, 48, .80);
+}
+
+.menu-link-brand:hover {
+  color: rgb(180, 40, 48);
+  background-color: rgba(233, 237, 235, 0.5 );
+}
