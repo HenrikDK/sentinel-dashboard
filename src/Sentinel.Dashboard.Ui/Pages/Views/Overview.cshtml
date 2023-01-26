@@ -148,17 +148,17 @@
      },             
      async mounted () {
         const [activityOption, issues] = await Promise.all([
-              fetch("./?handler=overviewActivity")
+              fetch("./?handler=overviewActivity&environment=" + this.$route.params.env)
                 .then(r => r.json())
                 .then(json => buildOverviewChart(json.categories, json.series)),
               
-              fetch("./?handler=issues")
+              fetch("./?handler=issues&environment=" + this.$route.params.env)
               .then(r => r.json()),
         ]);
 
         let optionRequests = issues.map(issue => {
           this.$data.miniOptions[issue.id] = {};
-          return loadMiniChart(issue.id)
+          return loadMiniChart(this.$route.params.env, issue.id)
         })
 
         this.$data.issues = issues;
