@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model Sentinel.Dashboard.Ui.Pages.IndexModel
 @{
@@ -10,6 +10,8 @@
     <partial name="Components/NavBar"/>
     <partial name="Components/Spinner"/>
     <partial name="Views/Environments"/>
+    <partial name="Views/Overview"/>
+    <partial name="Views/Issue"/>
 }
 
 <nav-bar></nav-bar>
