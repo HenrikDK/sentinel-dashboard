@@ -8,10 +8,10 @@
               <span class="text-xl font-semibold align-middle"> Sentinel</span>
             </a>
              <template v-if="$route.path != '/'">
-                <span class="px-3 text-xl font-semibold align-middle">-</span>
-                <a class="text-slate-600 hover:text-[#b42830] text-xl font-semibold align-middle" 
-                   href="/environments//overview"> Environment: 
-                </a>
+               <span class="px-3 text-xl font-semibold align-middle">-</span>
+               <router-link :to="{ name: 'overview', params: { env: $route.params.env }}" class="text-slate-600 hover:text-[#b42830] text-xl font-semibold align-middle">
+                 Environment: {{ $route.params.env }}
+               </router-link>
              </template>
           </div>
     
@@ -32,10 +32,11 @@
                   <template v-if="envVisible && environments.length > 0">
                     <div class="w-40 min-w-max absolute bg-gray-100 text-base float-left py-2 list-none text-left 
                               rounded-lg shadow-lg mt-1 m-0 bg-clip-padding border-none" ref="envDropdown">
-                      <div v-for="env in environments" class="hover:bg-white">
-                        <a class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent 
-                                  text-gray-700 hover:text-[#b42830]"
-                           :href="`/environments/${env}/issues`" @@click="envVisible = false"> {{ env }}</a>
+                      <div v-for="e in environments" class="hover:bg-white">
+                        <router-link class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:text-[#b42830]"
+                                     :to="{ name: 'overview', params: { env: e }}" @@click="envVisible = false">
+                          {{ e }}
+                        </router-link>
                       </div>
                     </div>
                   </template>
