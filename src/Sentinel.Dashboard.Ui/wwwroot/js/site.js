@@ -257,9 +257,3 @@ function buildDetailMiniChart(json){
     
     return options;
 }
-
-function getPageId() {
-    const url = window.location.href;
-    const id = url.split("/").slice(-1)[0];
-    return id;
-}
