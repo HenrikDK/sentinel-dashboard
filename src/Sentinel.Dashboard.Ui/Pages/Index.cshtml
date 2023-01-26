@@ -1,0 +1,21 @@
+﻿@page "/"
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Sentinel.Dashboard.Ui.Pages.IndexModel
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Sentinel";
+}
+
+@section VueComponents {
+    <partial name="Components/NavBar"/>
+    <partial name="Components/Spinner"/>
+    <partial name="Views/Environments"/>
+}
+
+<nav-bar></nav-bar>
+
+<div class="grid grid-cols-[85px_1fr] gap-2 h-screen">
+    <main class="overflow-auto">
+        <router-view></router-view>
+    </main>
+</div>
