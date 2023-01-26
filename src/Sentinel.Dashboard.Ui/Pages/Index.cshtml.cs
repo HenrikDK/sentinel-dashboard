@@ -22,8 +22,37 @@ public class IndexModel : PageModel
         var all = _humioRepository.GetEnvironments();
         return new JsonResult(all);
     }
+    
+    public JsonResult OnGetOverviewActivity(string environment, string timeSpan = "24hours")
+    {
+        var items = _humioRepository.GetActivity(environment, timeSpan);
 
-    public JsonResult OnGetActivity(string environment, string issueId, string timeSpan = "24hours")
+        var times = items.Select(x => x.Bucket).Distinct().ToList();
+        times.Sort();
+                
+        var categories = times.Select(x => x.ToString("HH:mm")).ToList();
+
+        var grouped = items.ToLookup(x => x.Name);
+
+        var series = grouped.Select(x => new
+        {
+            name = x.Key,
+            data = x.OrderBy(y => y.Bucket).Select(y => y.Count).ToList(),
+            type = "bar",
+            stack = "x"
+        }).ToList();
+        series = series.OrderBy(x => x.name).ToList();
+
+        return new JsonResult(new { categories, series });
+    }
+
+    public JsonResult OnGetIssues(string environment)
+    {
+        var issues = _humioRepository.GetOverview(environment);
+        return new JsonResult(issues);
+    }
+    
+    public JsonResult OnGetIssueActivity(string environment, string issueId, string timeSpan = "24hours")
     {
         var issues = _humioRepository.GetOverview(environment);
         var issue = issues.FirstOrDefault(x => x.Id == issueId);
