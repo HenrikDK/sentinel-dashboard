@@ -150,6 +150,14 @@
           
           this.$data.services = services;
         },
+        resetView(){
+          this.$data.issues = [];
+          this.$data.services = [];
+          this.$data.filter = [];
+          this.$data.overviewOptions = {};
+          this.$data.miniOptions = {};
+          this.$data.updated = false;
+        },
         async initView(){
           const [activityOption, issues] = await Promise.all([
             fetch("./?handler=overviewActivity&environment=" + this.$route.params.env)
@@ -181,6 +189,7 @@
      },
      watch: {
         async '$route' () {
+            this.resetView();
             await this.initView();
          }
      },
