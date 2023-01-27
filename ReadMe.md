@@ -12,7 +12,7 @@ The dashboard presents the developer with a quick overview of issues for the las
 To further help the developer the dashboard also provides a number of usefull graphs to get a quick overview of how many times each issue has arrisen in the last 24 hours. 
 
 ## Detail View
-![detail](docs/detail-view.png)
+![detail](docs/details.png)
 
 By clicking on the issue you can see a detail page that includes the exception details, stacktrace and any data included with the exception (the main benefit of structured logging is to enrich the exception context and add data when errors occour to ease debugging). This page also includes 2 graphs with activity for the last 24 hours and 30 days. and the ability to switch between raw stack trace and different summerized views.
 
