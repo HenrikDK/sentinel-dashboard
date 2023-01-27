@@ -41,8 +41,10 @@
           </div>
         </div>
       </div>
-      <div v-else class="mr-3 mb-3">
-        <spinner></spinner>
+      <div v-else class="mr-3 mt-48 flex w-full justify-center">
+        <div class="">
+          <spinner></spinner>
+        </div>
       </div>
 
       <div v-if="error.data" class="mr-3 mb-3">
@@ -79,7 +81,7 @@
       </div>
 
       <div v-if="error.data" class="mr-3 mb-3">
-        <div v-if="error.id" class="flex content-between mb-4">
+        <div v-if="error.id" class="flex justify-between mb-4">
           <div class="flex mr-3">
             <div v-if="error.id">
               <div class="text-sm text-gray-500 uppercase font-semibold leading-5">
@@ -217,16 +219,24 @@
           <span v-if="issue.firstSeen">{{ toTimeAgo(issue.firstSeen) }}</span>
           <span v-else>&nbsp;</span>
         </div>
-        <hr>
       </div>
+      <div v-else class="my-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
+      </div>      
 
+      <hr>
+      
       <div v-if="quote" class="pt-4">
         <p>
           {{ quote }}
         </p>
       </div>
-      <div v-else>
-        <spinner></spinner>
+      <div v-else class="mt-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
       </div>
     </aside>
   </div>
