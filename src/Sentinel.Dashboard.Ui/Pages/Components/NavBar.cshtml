@@ -1,0 +1,65 @@
+<template id="nav-bar">
+    <header>
+      <div class="w-full bg-glass sticky-top fixed z-50">
+        <nav class="p-2 mx-auto max-w-screen-xl justify-between flex" aria-label="Main navigation">
+          <div class="w-3/6 flex p-0 me-5">
+            <a class="text-slate-600 hover:text-[#b42830] flex" href="/" aria-label="Sentinel">
+              <img src="~/favicon.png" class="mr-2 h-8" alt="Sentinel" asp-append-version="true"/>
+              <span class="text-xl font-semibold align-middle"> Sentinel</span>
+            </a>
+             <template v-if="$route.path != '/'">
+               <span class="px-3 text-xl font-semibold align-middle">-</span>
+               <router-link :to="{ name: 'overview', params: { env: $route.params.env }}" class="text-slate-600 hover:text-[#b42830] text-xl font-semibold align-middle">
+                 Environment: {{ $route.params.env }}
+               </router-link>
+             </template>
+          </div>
+    
+          <div id="envNav" class="flex justify-center">
+            <template v-if="$route.path != '/'">
+              <div>
+                <div class=" relative" aria-label="Select Environment">
+                  <button @@click="envVisible = !envVisible" type="button"
+                          class="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md transition duration-150 ease-in-out flex items-center whitespace-nowrap 
+                          hover:bg-gray-100 hover:shadow-lg 
+                          focus:bg-gray-100 focus:shadow-lg focus:outline-none focus:ring-0">
+                    Environments
+                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="caret-down" class="w-2 ml-2"
+                         role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path fill="currentColor" d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"></path>
+                    </svg>
+                  </button>
+                  <template v-if="envVisible && environments.length > 0">
+                    <div class="w-40 min-w-max absolute bg-gray-100 text-base float-left py-2 list-none text-left 
+                              rounded-lg shadow-lg mt-1 m-0 bg-clip-padding border-none" ref="envDropdown">
+                      <div v-for="e in environments" class="hover:bg-white">
+                        <router-link class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:text-[#b42830]"
+                                     :to="{ name: 'overview', params: { env: e }}" @@click="envVisible = false">
+                          {{ e }}
+                        </router-link>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              </template>
+          </div>
+        </nav>
+      </div>
+      <div class="h-14"></div>
+    </header>
+</template>
+
+<script>
+    components["nav-bar"] = {
+      template: "#nav-bar",
+      data() {
+        return {
+          envVisible: false,
+        }
+      },
+      props: ['environments'],
+      methods: {},
+      async mounted() {},
+    };
+</script>
