@@ -1,4 +1,4 @@
-﻿<template id="issue">
+<template id="issue">
 <div class="flex w-full max-w-screen-xl mx-auto justify-center py-4">
   <div class="w-full content-start grid grid-cols-[minmax(100px,_auto)_325px] gap-2">
     <section class="pr-0 border-r border-gray-300">
@@ -79,7 +79,7 @@
       </div>
 
       <div v-if="error.data" class="mr-3 mb-3">
-        <div v-if="error.id" class="flex content-between mb-4">
+        <div v-if="error.id" class="flex justify-between mb-4">
           <div class="flex mr-3">
             <div v-if="error.id">
               <div class="text-sm text-gray-500 uppercase font-semibold leading-5">
