@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Flurl" Version="3.0.6" />
+    <PackageReference Include="Flurl" Version="3.0.7" />
     <PackageReference Include="Flurl.Http" Version="3.2.4" />
-    <PackageReference Include="Lamar" Version="8.1.0" />
-    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="8.1.0" />
+    <PackageReference Include="Lamar" Version="10.0.1" />
+    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="prometheus-net" Version="7.0.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="7.0.0" />
