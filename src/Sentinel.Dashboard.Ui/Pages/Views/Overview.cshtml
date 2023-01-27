@@ -1,4 +1,4 @@
-﻿<template id="overview">
+<template id="overview">
   <div v-if="issues.length > 0" class="flex justify-center">
     <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@finished="populateServices" style="width: 1200px; height: 170px;"/>
   </div>
@@ -46,7 +46,7 @@
           <div class="ml-4 mr-2 grow shrink w-60 basis-0">
             <div>
               <div class="mb-0.5 leading-4 truncate max-w-full" aria-label="Issue Exception">
-                <a aria-label="Issue link" :href="`./issues/${issue.id}`">
+                <router-link :to="{ name: 'issue', params: { env: $route.params.env, issue: issue.id }}" aria-label="Issue link">
                   <span>
                     <span class="text-blue-500 font-semibold" v-if="issue.exceptionType">{{ issue.exceptionType }}</span>
                     <span class="text-blue-500 font-semibold" v-else>NoExceptionFound!</span>
@@ -54,7 +54,7 @@
                     <span class="text-slate-500 font-light text-[14px] truncate">{{ issue.sourceContext }}</span>
                     <br>
                   </span>
-                </a>
+                </router-link>
               </div>
               <div class="flex items-center mb-1.5" aria-label="Exception Message">
                 <div v-if="issue.renderedMessage" class="truncate max-w-full text-[14px]">{{ issue.renderedMessage }}</div>
