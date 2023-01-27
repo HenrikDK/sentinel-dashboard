@@ -11,7 +11,7 @@ builder.Host.UseLamar((context, registry) =>
         x.LookForRegistries();
     });
 
-    registry.For<IHumioRepository>().Use<FakioRepository>();
+//    registry.For<IHumioRepository>().Use<FakioRepository>();
 });
 
 builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
@@ -29,8 +29,8 @@ builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
             .MinimumLevel.Warning()
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
-            .WriteTo.Console()
-            //.If(Debugger.IsAttached, c => c.WriteTo.Console(), c => c.WriteTo.Console(new JsonFormatter(renderMessage:true)))
+            //.WriteTo.Console()
+            .WriteTo.Console(new JsonFormatter(renderMessage:true))
             .CreateLogger();
 
         config.ClearProviders();
