@@ -79,7 +79,7 @@
               </div>
             </div>
           </div>
-          <div class="w-[270px] mx-4 self-center" aria-label="Issue error events activity graph">
+          <div class="w-[270px] h-[55px] mx-4 self-center" aria-label="Issue error events activity graph">
             <div v-if="updated">
               <v-chart :option="miniOptions[issue.id]" :init-options="initOptions" class="w-[270px] h-[55px] relative"></v-chart>
             </div>
@@ -139,7 +139,7 @@
         },
         toTimeAgo(value){
           return moment(value).fromNow();
-        },        
+        },
         populateServices(){
           if (this.$data.services && this.$data.services.length > 0 ) return;
           let chart = this.$refs.overview.chart;
