@@ -151,11 +151,11 @@ function buildOverviewMiniChart(category, data){
     return options;
 }
 
-async function loadMiniChart(id){
-    let options = await fetch("./issues/" + id + "/?handler=activity")
+async function loadMiniChart(environment, issueId){
+    let options = await fetch("./?handler=issueActivity&issueId=" + issueId + "&environment=" + environment)
         .then(r => r.json())
         .then(json => buildOverviewMiniChart(json.categories, json.series));
-    return {options, id}
+    return {options, issueId}
 }
 
 function formatBytes(bytes, decimals = 2) {
