@@ -167,7 +167,6 @@
     </section>
 
     <aside class="p-3">
-    
       <div v-if="issue.id" class="col text-sm" :set="version = issue.containerImage.split(':').slice(-1)[0]">
         <span class="mb-0 text-sm font-semibold text-slate-700">Environment:</span>
         <div class="mb-3">
@@ -198,7 +197,6 @@
           <span v-if="dayOptions.series">{{ dayOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
           <span v-else>&nbsp;</span>
           <v-chart v-if="dayOptions" :option="dayOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
-          <spinner v-else></spinner>
         </div>
 
         <span class="mb-0 text-sm font-semibold text-slate-700">Last 30 Days: </span>
@@ -206,7 +204,6 @@
           <span v-if="monthOptions.series">{{ monthOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
           <span v-else>&nbsp;</span>
           <v-chart v-if="monthOptions" :option="monthOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
-          <spinner v-else></spinner>
         </div>
 
         <span class="mb-0 text-sm font-semibold text-slate-700">Last Seen:</span>
@@ -241,8 +238,8 @@
 </template>
 
 <script type="module">
-  components["environments"] = {
-    template: "#environments",
+  components["issue"] = {
+    template: "#issue",
     data: function () {
       return {
         error: {},
@@ -270,7 +267,10 @@
       },
       validValue: function (value) {
           return !((typeof(value) === 'object' && value !== null) || value === null || value === "")
-        },
+      },
+      toTimeAgo(value){
+        return moment(value).fromNow();
+      },
       hasProperties: function (value){
         try {
           if(value.message.Properties)
@@ -362,18 +362,18 @@
         }
       },
     async mounted () {
-      fetch("./?handler=activity&timeSpan=24hours")
+      fetch("./?handler=issueActivity&timeSpan=24hours&issueId=" + this.$route.params.issue + "&environment=" + this.$route.params.env)
         .then(r => r.json())
         .then(j => {
           this.$data.dayOptions = buildDetailMiniChart(j);
           this.$data.issue = j.issue;
         });
       
-      fetch("./?handler=activity&timeSpan=30days")
+      fetch("./?handler=issueActivity&timeSpan=30days&issueId=" + this.$route.params.issue + "&environment=" + this.$route.params.env)
         .then(r => r.json())
         .then(j => this.$data.monthOptions = buildDetailMiniChart(j));
       
-      fetch("./?handler=errors")
+      fetch("./?handler=errors&issueId=" + this.$route.params.issue + "&environment=" + this.$route.params.env)
       .then(r => r.json())
       .then(j => {
         this.$data.index = j;
@@ -388,5 +388,5 @@
     }
   };
 
-  routes.push({path:'/environments/:env/issues/:issue/', name: "issue", component: components["issue"]})    
+  routes.push({path:'/environments/:env/issues/:issue', name: "issue", component: components["issue"]})    
 </script>
