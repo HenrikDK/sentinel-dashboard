@@ -1,4 +1,5 @@
-<template id="overview">
+﻿<template id="overview">
+  <div>
   <div v-if="issues.length > 0" class="flex justify-center">
     <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@finished="populateServices" style="width: 1200px; height: 170px;"/>
   </div>
@@ -38,7 +39,7 @@
           <div class="w-20 mx-4 uppercase text-xs font-bold text-gray-500 text-right">30 Days</div>
         </div>
       </div>
-      
+
       <div>
         <div v-for="issue in issues" class="leading-4 flex relative border-b border-solid border-gray-300 py-3"
              v-show="filter.includes(issue.service) || filter.length === 0"
@@ -80,7 +81,10 @@
           </div>
           <div class="w-[270px] mx-4 self-center" aria-label="Issue error events activity graph">
             <div>
-              <v-chart v-if="updated" :option="miniOptions[issue.id]" :init-options="initOptions" class="w-[270px] h-[55px] relative"/>
+              <v-chart v-if="updated" :option="miniOptions[issue.id]" :init-options="initOptions" class="w-[270px] h-[55px] relative"></v-chart>
+              <div v-else>
+                <spinner></spinner>
+              </div>
             </div>
           </div>
           <div class="flex justify-end self-center w-20 mx-4" aria-label="Events last 24 Hours">
@@ -92,6 +96,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
