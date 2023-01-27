@@ -1,4 +1,4 @@
-<template id="issue">
+﻿<template id="issue">
 <div class="flex w-full max-w-screen-xl mx-auto justify-center py-4">
   <div class="w-full content-start grid grid-cols-[minmax(100px,_auto)_325px] gap-2">
     <section class="pr-0 border-r border-gray-300">
@@ -41,8 +41,10 @@
           </div>
         </div>
       </div>
-      <div v-else class="mr-3 mb-3">
-        <spinner></spinner>
+      <div v-else class="mr-3 mt-48 flex w-full justify-center">
+        <div class="">
+          <spinner></spinner>
+        </div>
       </div>
 
       <div v-if="error.data" class="mr-3 mb-3">
@@ -217,16 +219,24 @@
           <span v-if="issue.firstSeen">{{ toTimeAgo(issue.firstSeen) }}</span>
           <span v-else>&nbsp;</span>
         </div>
-        <hr>
       </div>
+      <div v-else class="my-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
+      </div>      
 
+      <hr>
+      
       <div v-if="quote" class="pt-4">
         <p>
           {{ quote }}
         </p>
       </div>
-      <div v-else>
-        <spinner></spinner>
+      <div v-else class="mt-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
       </div>
     </aside>
   </div>
