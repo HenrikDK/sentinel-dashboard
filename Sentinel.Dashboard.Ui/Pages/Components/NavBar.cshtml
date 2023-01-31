@@ -58,8 +58,13 @@
           envVisible: false,
         }
       },
+      emits: ['no-environments'],
       props: ['environments'],
       methods: {},
-      async mounted() {},
+      async mounted() {
+        if (this.$props.environments.length === 0){
+          this.$emit('no-environments')
+        }
+      },
     };
 </script>
