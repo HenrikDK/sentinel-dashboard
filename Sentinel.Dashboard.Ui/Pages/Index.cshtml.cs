@@ -14,7 +14,6 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-
     }
     
     public JsonResult OnGetEnvironments()
