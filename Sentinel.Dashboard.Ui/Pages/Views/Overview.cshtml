@@ -12,11 +12,10 @@
 
   <div class="flex flex-wrap text-sm w-full max-w-screen-xl mx-auto py-4" aria-label="Service filter list">
     <template v-for="s in services">
-      <button class="bg-gray-50 rounded-xl shadow-sm flex border border-solid border-gray-300 mx-2 my-1 p-2 text-gray-700 
-              hover:bg-white hover:shadow-lg 
-              aria-selected:text-[#b42830] aria-selected:bg-white aria-selected:shadow-lg"
+      <button class="bg-transparent font-semibold p-2 border border-solid rounded-xl shadow-md text-black mx-2 my-1
+              hover:text-white aria-selected:text-white" 
+              :class="['border-[' + s.color + ']', 'hover:bg-[' + s.color + ']', 'aria-selected:bg-[' + s.color + ']' ]"
               @@click="selectService(s.name, false)" @@dblclick="selectService(s.name, true)" :aria-selected="filter.includes(s.name)">
-        <div class="mr-2 w-5 h-5 rounded" :style="{ 'background-color': s.color }"></div>
         {{ s.name }}
       </button>
     </template>
