@@ -5,7 +5,7 @@
           <div class="w-3/6 flex p-0 me-5">
             <a class="text-slate-600 hover:text-[#b42830] flex" href="/" aria-label="Sentinel">
               <img src="~/favicon.png" class="mr-2 h-8" alt="Sentinel" asp-append-version="true"/>
-              <span class="text-xl font-semibold align-middle">Sentinel</span>
+              <span class="text-xl font-semibold align-middle">@ViewData["Title"]</span>
             </a>
              <template v-if="$route.path != '/'">
                <span class="px-3 text-xl font-semibold align-middle">-</span>
