@@ -75,11 +75,14 @@
          this.$data.envVisible = false;
        }
      },
+     loadEnvironments() {
+       fetch("/?handler=environments")
+         .then(r => r.json())
+         .then(json => (this.environments = json));
+     }    
    },
    mounted () {
-     fetch("/?handler=environments")
-       .then(r => r.json())
-       .then(json => (this.environments = json));   
+     this.loadEnvironments();
      
      document.addEventListener('click', this.clickHandler);
    },
