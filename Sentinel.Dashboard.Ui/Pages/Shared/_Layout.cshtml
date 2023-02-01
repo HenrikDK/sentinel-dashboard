@@ -14,6 +14,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
+        var components = {};
+        var routes = []
+    
         tailwind.config = {
           theme: {
             extend: {
@@ -25,6 +28,22 @@
         }
     </script>
     
+    <script type="importmap">
+    {
+        "imports": {
+            "vue": "https://cdn.jsdelivr.net/npm/vue@3.2.40/dist/vue.esm-browser.js",
+            "@@vue/devtools-api": "https://cdn.jsdelivr.net/npm/@@vue/devtools-api@6.4.3/lib/esm/index.min.js",
+            
+            "vue-router": "https://cdn.jsdelivr.net/npm/vue-router@4.1.6/dist/vue-router.esm-browser.js",
+            
+            "vue-echarts": "https://cdn.jsdelivr.net/npm/vue-echarts@6.2.3/dist/index.esm.min.js",
+            "vue-demi": "https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.mjs",
+            "resize-detector": "https://cdn.jsdelivr.net/npm/resize-detector@0.3.0/esm/index.js",
+            "echarts/core": "https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.esm.min.js"
+        }
+    }
+    </script>
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="~/js/site.js" asp-append-version="true"></script>
 </head>
@@ -34,22 +53,6 @@
 <div class="scroll-mt-14 w-full px-3" id="app">
   @RenderBody()
 </div>
-
-<script type="importmap">
-{
-    "imports": {
-        "vue": "https://cdn.jsdelivr.net/npm/vue@3.2.40/dist/vue.esm-browser.js",
-        "@@vue/devtools-api": "https://cdn.jsdelivr.net/npm/@@vue/devtools-api@6.4.3/lib/esm/index.min.js",
-        
-        "vue-router": "https://cdn.jsdelivr.net/npm/vue-router@4.1.6/dist/vue-router.esm-browser.js",
-        
-        "vue-echarts": "https://cdn.jsdelivr.net/npm/vue-echarts@6.2.3/dist/index.esm.min.js",
-        "vue-demi": "https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.mjs",
-        "resize-detector": "https://cdn.jsdelivr.net/npm/resize-detector@0.3.0/esm/index.js",
-        "echarts/core": "https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.esm.min.js"
-    }
-}
-</script>
 
 @RenderSection("VueComponents", required: false)
 
@@ -67,14 +70,6 @@
     
    const app = createApp({
    methods: {
-     clickHandler(event) {
-       const { target } = event;
-       const { $el } = this;
-
-       if (!$el.contains(target)) {
-         this.$data.envVisible = false;
-       }
-     },
      loadEnvironments() {
        fetch("/?handler=environments")
          .then(r => r.json())
@@ -82,11 +77,8 @@
      }    
    },
    mounted () {
-     this.loadEnvironments();
-     
-     document.addEventListener('click', this.clickHandler);
+     this.loadEnvironments();     
    },
-   mixins: mixinArray,
    data() {
      return {
        envVisible: false,

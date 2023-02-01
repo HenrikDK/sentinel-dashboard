@@ -1,8 +1,4 @@
-﻿var mixinArray = [];
-var components = {};
-var routes = []
-
-function miniChartFormatter(params) {
+﻿function miniChartFormatter(params) {
     if (Array.isArray(params))
     {
         output = '<div style="font-size:14px;color:#666;font-weight:400;line-height:1;">' + params[0].name + '</div>'

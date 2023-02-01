@@ -60,8 +60,19 @@
       },
       emits: ['no-environments'],
       props: ['environments'],
-      methods: {},
+      methods: {
+       clickHandler(event) {
+         const { target } = event;
+         const { $el } = this;
+  
+         if (!$el.contains(target)) {
+           this.$data.envVisible = false;
+         }
+       }        
+      },
       async mounted() {
+        document.addEventListener('click', this.clickHandler);
+
         if (this.$props.environments.length === 0){
           this.$emit('no-environments')
         }
