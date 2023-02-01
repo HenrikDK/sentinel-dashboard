@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <link rel="icon" type="image/png" href="/favicon.png" asp-append-version="true"/>
 <html lang="en">
@@ -67,14 +67,6 @@
     
    const app = createApp({
    methods: {
-     clickHandler(event) {
-       const { target } = event;
-       const { $el } = this;
-
-       if (!$el.contains(target)) {
-         this.$data.envVisible = false;
-       }
-     },
      loadEnvironments() {
        fetch("/?handler=environments")
          .then(r => r.json())
@@ -82,11 +74,8 @@
      }    
    },
    mounted () {
-     this.loadEnvironments();
-     
-     document.addEventListener('click', this.clickHandler);
+     this.loadEnvironments();     
    },
-   mixins: mixinArray,
    data() {
      return {
        envVisible: false,
