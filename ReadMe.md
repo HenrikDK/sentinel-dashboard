@@ -17,7 +17,7 @@ To further help the developer the dashboard also provides a number of usefull gr
 By clicking on the issue you can see a detail page that includes the exception details, stacktrace and any data included with the exception (the main benefit of structured logging is to enrich the exception context and add data when errors occour to ease debugging). This page also includes 2 graphs with activity for the last 24 hours and 30 days. and the ability to switch between raw stack trace and different summerized views.
 
 # Installation using Helm Chart
-The dashboard is meant to be installed into a cluster using the provided [helm chart](https://henrikdk.github.io/helm-charts/), the helm chart can be found in the DSB repository:
+The dashboard is meant to be installed into a cluster using the provided [helm chart](https://henrikdk.github.io/helm-charts/):
 
 ```
 helm repo add henrikdk https://henrikdk.github.io/helm-charts/
