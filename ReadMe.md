@@ -1,6 +1,6 @@
 # Sentinel Dashboard
 
-The sentinel dashboard is meant as a lightweight tool to help .Net developers work with the output of serilogs structured json logs. 
+The sentinel dashboard is meant as a lightweight tool to help developers work with the output of structured json logs (currently limited to serilog's format). 
 
 Some developers can be reluctant to embrace [structured logging](https://www.sumologic.com/glossary/structured-logging) which is otherwise a powerfull tool to manage exceptions in a microservice architecture. To enable the use of structured logging using the JSON format, 
 
