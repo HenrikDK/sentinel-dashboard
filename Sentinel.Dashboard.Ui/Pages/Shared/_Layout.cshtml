@@ -11,13 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.4"></script>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
       var components = {};
       var routes = []
-    
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -34,20 +34,24 @@
         }
       }
     </script>
-    
+
     <script type="importmap">
     {
-        "imports": {
-            "vue": "https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.esm-browser.js",
-            "@@vue/devtools-api": "https://cdn.jsdelivr.net/npm/@@vue/devtools-api@6.5.0/lib/esm/index.min.js",
-            
-            "vue-router": "https://cdn.jsdelivr.net/npm/vue-router@4.2.2/dist/vue-router.esm-browser.js",
-            
-            "vue-echarts": "https://cdn.jsdelivr.net/npm/vue-echarts@6.6.0/dist/index.esm.min.js",
-            "vue-demi": "https://cdn.jsdelivr.net/npm/vue-demi@0.14.5/lib/index.mjs",
-            "resize-detector": "https://cdn.jsdelivr.net/npm/resize-detector@0.3.0/esm/index.js",
-            "echarts/core": "https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.esm.min.js"
-        }
+      "imports": {
+        "vue": "https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.esm-browser.js",
+        "@@vue/devtools-api": "https://cdn.jsdelivr.net/npm/@@vue/devtools-api@6.5.0/lib/esm/index.min.js",
+        
+        "@@floating-ui/core": "https://cdn.jsdelivr.net/npm/@@floating-ui/core@1.2.4/dist/floating-ui.core.browser.min.mjs",
+        "@@floating-ui/dom": "https://cdn.jsdelivr.net/npm/@@floating-ui/dom@1.2.4/dist/floating-ui.dom.browser.min.mjs",
+        "floating-ui/vue": "https://cdn.jsdelivr.net/npm/@@floating-ui/vue@1.0.1/dist/floating-ui.vue.mjs",
+        
+        "vue-router": "https://cdn.jsdelivr.net/npm/vue-router@4.2.2/dist/vue-router.esm-browser.js",
+        
+        "vue-echarts": "https://cdn.jsdelivr.net/npm/vue-echarts@6.6.0/dist/index.esm.min.js",
+        "vue-demi": "https://cdn.jsdelivr.net/npm/vue-demi@0.14.5/lib/index.mjs",
+        "resize-detector": "https://cdn.jsdelivr.net/npm/resize-detector@0.3.0/esm/index.js",
+        "echarts/core": "https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.esm.min.js"
+      }
     }
     </script>
 
