@@ -1,43 +1,69 @@
 ﻿<template id="environments">
     <div class="flex justify-center">
         <div class="p-2">
-            <br/>
-
-            <span class="text-4xl text-slate-900">Select an environment</span>
             
-            <p>&nbsp;</p>
+            <div class="py-8 flex justify-center">
+                <span class="text-4xl text-slate-900">Select an environment</span>
+            </div>
 
-            <div class="flex justify-center">
-                <div v-if="environments.length > 0">
-                    <ul class="list-none, pl-0">
-                        <li v-for="e in environments">
-                            <router-link :to="{ name: 'overview', params: { env: e }}" class="menu-link-brand font-bold no-underline text-4xl max-w-full block p-2">
-                                {{ e }}
-                            </router-link>
-                        </li>
-                    </ul>
-                </div>
-                <div v-else>
+            <div class="flex flex-wrap justify-center">
+                <template v-if="environments.length > 0" v-for="s in environments">
+                    <div class="flex justify-center my-4">
+                        <div class="bg-white rounded shadow-md mx-4 border border-solid border-gray-300">
+                            <div aria-label="Spaace header">
+                                <div class="bg-gray-200 py-2 h-11 mx-[-1px] flex justify-between rounded-t border-x border-solid border-gray-300 items-center">
+                                    <div class="mx-4 font-bold text-gray-600 hover:underline">
+                                        Namespace: {{ s.root?.toUpperCase() }}
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <div class="mx-4 font-bold text-gray-600">Space: {{ s.space?.toUpperCase() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center">
+                                <ul class="list-none w-full text-center pl-0">
+                                    <li v-for="e in s.environments">
+                                        <template v-if="$route.name == 'app-environments'">
+                                            <router-link :to="{ name: 'app-issues', params: { env: e, space: s.space }, query: $route.query }" 
+                                                         class="text-dsb hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                {{ e }}
+                                            </router-link>
+                                        </template>
+                                        <template v-else>
+                                            <router-link :to="{ name: 'data-issues', params: { env: e, space: s.space }, query: $route.query }" 
+                                                         class="text-dsb hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                {{ e }}
+                                            </router-link>
+                                        </template>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
                     <spinner></spinner>
-                </div>
+                </template>
             </div>
         </div>
     </div>
 </template>
 
 <script type="module">
-import { ref } from 'vue'
-
-let setup = () => {
-  
-  return {};
-}
-
-components["environments"] = { 
-    template: "#environments",
-    props: ['environments'],
-    setup};
-routes.push({path:'/', name:"environments", component: components["environments"]})
+    components["environments"] = {
+        template: "#environments",
+        data() {
+            return {
+                pods: {},
+                podData: [],
+            }
+        },
+        props: ['environments'],        
+        computed: {},
+    };
+    
+    routes.push({path:'/environments/app', name:"app-environments", component: components["environments"]})
+    routes.push({path:'/environments/data', name:"data-environments", component: components["environments"]})    
 </script>
 
 <style>
