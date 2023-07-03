@@ -37,11 +37,16 @@
           </div>
     
           <div id="envNav" class="flex justify-center">
-            <template v-if="$route.path != '/'">
+            <template v-if="$route.name?.includes('deployments')">
+              <div>
+                <search @@update:search="$emit('search', $event)"></search>
+              </div>
+            </template>
+            <template v-else-if="['app-issues', 'data-issues', 'app-issue', 'data-issue'].includes($route.name)">
               <div>
                 <environment-select :values="environments" :space="space" :env="env" ></environment-select>
               </div>
-              </template>
+            </template>
           </div>
         </nav>
       </div>
