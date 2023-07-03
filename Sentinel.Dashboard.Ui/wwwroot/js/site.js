@@ -62,7 +62,7 @@ function buildOverviewChart(category, data){
             left: 10,
             containLabel: true,
             bottom: 0,
-            top: 30,
+            top: 20,
             right: 10
         },
         yAxis: {
