@@ -1,9 +1,9 @@
 <template id="nav-bar">
-    <header>
+    <header class="group">
       <div class="w-full bg-glass sticky-top fixed z-50" :class="[$route.query?.kiosk ? 'hidden group-hover:block' : '']">
         <nav class="mx-auto max-w-screen-xl justify-between flex" aria-label="Main navigation">
           <div class="flex grow p-0 me-5">
-            <router-link :to="{name: 'environments', query: $route.query }" href="/" aria-label="Sentinel"
+            <router-link :to="{name: 'deployments', query: $route.query }" href="/" aria-label="Sentinel"
                          class="text-slate-600 hover:text-brand flex items-center">
               
               <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 my-1 h-9 fill-brand " xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 372.7 214.5">
