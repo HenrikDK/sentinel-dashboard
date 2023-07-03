@@ -1,0 +1,284 @@
+﻿<template id="deployments">
+  <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start relative">
+    
+    <template v-if="!$route.params.env && !$route.params.space && !this.search && spaces.length > 0">
+      <div class="mt-4 mb-2">Filters: </div>
+      <div class="w-full flex flex-wrap mb-4">
+        <router-link :to="{ name: 'live', query: $route.query }">
+          <div class="rounded mx-1 p-1 border border-gray-300 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+            Live Changes
+          </div>
+        </router-link>
+        
+        <template v-for="ns in spaces">
+          <router-link :to="{ name: 'deployments-namespace', params: { env: ns.namespace, space: ns.space }, query: $route.query }">
+            <div class="rounded mx-1 p-1 border border-gray-300 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+              {{ ns.namespace?.toUpperCase() }}
+            </div>
+          </router-link>
+        </template>
+      </div>
+    </template>
+    
+    <template v-for="ns in spaces">
+      <template v-if="isVisible(ns) && isMatched(ns)">
+        <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid border-gray-300 w-fit"
+             aria-label="Spaces">
+         
+          <div class="bg-gray-200 py-2 h-8 flex rounded-t border-solid border-gray-300 items-center"
+               aria-label="Space header">
+            <div class="w-64">
+              <tooltip placement="right">
+                <template v-slot:cell>
+                  <div class="ml-2 font-bold text-gray-600 p-0.5 rounded border border-gray-200 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+                    <router-link :to="{ name: 'deployments-namespace', params: { env: ns.namespace, space: ns.space }, query: $route.query }">
+                      Namespace: {{ ns.namespace?.toUpperCase() }}
+                    </router-link>
+                  </div>
+                </template>
+
+                <template v-slot:tooltip>
+                  <div class="text-sm whitespace-no-wrap leading-none break-words w-fit">Filter namespace {{ ns.namespace?.toUpperCase() }}</div>
+                </template>
+              </tooltip>
+            </div>
+
+            <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
+              <template v-if="ns.environments.includes(e)">
+                <div v-if="e != 'prd'"
+                     class="pl-3 flex w-56 text-gray-500">
+                  {{ e.toUpperCase() }}
+                </div>
+                <div v-else class="pl-3 flex w-56 justify-between items-center">
+                  <div class="text-gray-500">
+                    {{ e.toUpperCase() }}
+                  </div>
+                  <tooltip placement="left">
+                    <template v-slot:cell>
+                      <div class="mr-2 font-bold text-gray-600 p-0.5 rounded border border-gray-200 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+                        <router-link :to="{ name: 'deployments-space', params: { space: ns.space }, query: $route.query }">
+                          Space: {{ ns.space?.toUpperCase() }}
+                        </router-link>
+                      </div>
+                    </template>
+                    <template v-slot:tooltip>
+                      <div class="text-sm whitespace-no-wrap leading-none break-words w-fit">Filter space {{ ns.space?.toUpperCase() }}</div>
+                    </template>
+                  </tooltip>
+                </div>
+              </template>
+            </template>
+          </div>
+
+          <template v-for="repository in ns.repositories">
+            <template v-if="isMatched(repository)">
+              <deployment-bar :expanded="expanded" :ns="ns" :repository="repository" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+            </template>
+          </template>
+        </div>
+      </template>
+    </template>
+    <div class="my-4 w-fit">&nbsp;</div>
+  </div>
+</template>
+
+<script type="module">
+    components["deployments"] = {
+      template: "#deployments",
+      data() {
+        return {
+          expanded: {},
+          spaces: [],
+          alerts: [],
+          deployments: [],
+        }
+      },
+      props: ['env', 'space', 'search'],
+      methods: {
+        toggleDetails(value){
+          if (value in this.$data.expanded){
+            this.$data.expanded[value] = !this.$data.expanded[value];
+          }else{
+            this.$data.expanded[value] = true;
+          }
+        },
+        isMatched(value){
+          if (this.search?.length > 3) return value.matched;
+          
+          return true;
+        },
+        isVisible(value){
+          if (this.space && this.env){
+              return value.space === this.space && value.namespace === this.env
+          }
+          if (this.space){
+              return value.space === this.space
+          }
+          
+          return true;
+        },
+        getMaxSize(value){
+            switch (value.length){
+              case 2: return 'max-w-screen-md';
+              case 3: return 'max-w-screen-lg';
+              case 4: return 'max-w-screen-xl';
+             default: return 'max-w-screen-2xl';
+          }
+        },
+        hasEnvironment(environments, environment){
+          return environments.includes(environment)
+        },
+        filterSpaces(spaces, search){
+          if (search === undefined || search?.length < 3) return;
+          
+          let tokens = [];
+          if (search?.length > 0){
+            tokens = search.trim().split(' ')
+          }
+          
+          spaces.forEach(s => {
+            s.repositories.forEach(r => {
+              let name = tokens.every(y => r.name.includes(y));
+              let workloadName = r.workloads.some(x => tokens.every(y => x.name.includes(y)));
+              let workloadBranch = r.workloads.some(x => x.instances.some(i => tokens.every(y => i.metric.github_branch.includes(y))));
+              let workloadVersion = r.workloads.some(x => x.instances.some(i => tokens.every(y => i.metric.aks_version.includes(y))));
+              r.matched = name || workloadName || workloadBranch || workloadVersion;
+            })
+            
+            s.matched = s.repositories.some(r => r.matched)
+          });
+        },
+        updateModel(){
+          let grouped = _.groupBy(this.deployments, x => x.metric.github_org + '/' + x.metric.github_repository)
+                      
+          let results = [];
+          Object.keys(grouped).sort().forEach(g => {
+            let repository_pods = grouped[g];
+            let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
+            let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
+            let summary = {
+                'workloads': names,
+            }
+            
+            let repository = {
+                'name': g,
+                'matched': true,
+                'space': repository_pods[0].metric.aks_space,
+                'namespace': repository_pods[0].metric.namespace.split('-')[0],
+                'environments': environments,
+                'workloads': [],
+                'summary': summary
+            }
+            
+            names.forEach(x => {
+              let instances = repository_pods.filter(v => v.metric.aks_name === x)
+              let alerts = this.alerts.filter(a => a.metric.aks_name === x )
+              
+              let result = {
+                'name': x,
+                'instances': instances,
+              }
+              
+              environments.forEach(e => {
+                let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
+                let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
+                
+                let metrics = true;
+                if (working.length === 0 && missing.length > 0){
+                  metrics = false;
+                }
+                
+                let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
+                
+                result[e] = {
+                  'instance': most_recent,
+                  'metrics': metrics,
+                  'alerts': alerts.filter(a => a.metric.aks_environment === e)
+                };
+              })
+              
+              repository.workloads.push(result)
+            });
+            
+            environments.forEach(e => {
+                let missing = repository.workloads.some(w => w[e].metrics === false);
+                summary[e] = {
+                  'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
+                  'metrics': !missing,
+                  'alerts': this.alerts.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+                }
+            })
+            
+            results.push(repository)
+          })
+          
+          let names = Array.from(new Set(results.map(x => x.space))).sort();
+          let spaces = [];
+          names.forEach(x => {            
+            let workloads = results.filter(r => r.space === x)
+            let namespaces = Array.from(new Set(workloads.map(x => x.namespace))).sort();
+            namespaces.forEach(n => {
+              let namespace = {
+                'space': x,
+                'namespace': n,
+                'matched': true,
+                'repositories': workloads.filter(r => r.namespace === n)
+              }
+              let environments = namespace.repositories.map(y => y.environments).reduce((a, e) => a.concat(e), [])
+              namespace['environments'] = Array.from(new Set(environments));
+              spaces.push(namespace)
+            });
+          });
+          
+          this.filterSpaces(spaces, this.$props.search)
+          
+          this.$data.spaces = spaces;
+        },
+        fetchData(){
+          //fetch("/api/deployments")
+          fetch("/prometheus.json")
+          .then(r => r.json())
+          .then(j => {
+              if (j.status === "success"){
+                  this.$data.deployments = j.data.result
+              }
+          });
+          
+          //fetch("/api/alerts")
+          fetch("/alerts.json")
+            .then(r => r.json())
+            .then(j => {
+                if (j.status === "success"){
+                    this.$data.alerts = j.data.result
+                }
+          });
+        }
+      },
+      watch: {
+        search(value){
+          this.filterSpaces(this.spaces, value);
+        },
+        deployments(value) {
+          this.updateModel();
+        },
+        alerts(value){
+          this.updateModel();
+        }
+      },
+      async mounted () {
+        this.fetchData();
+
+        this.timer = setInterval(this.fetchData, 20000);
+      },
+      destroy() {
+        clearInterval(this.timer)
+      }
+    };
+    
+    routes.push({path:'/spaces/:space/environments/:env/deployments', name:"deployments-namespace", component: components["deployments"]});
+    routes.push({path:'/spaces/:space/deployments', name:"deployments-space", component: components["deployments"]});
+    routes.push({path:'/', name:"deployments", component: components["deployments"]});
+</script>
+
+<style>
+</style>
