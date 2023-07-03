@@ -20,7 +20,7 @@ public class HumioRepositoryTests
         var registry = new ServiceRegistry();
         registry.Scan(x =>
         {
-            x.AssemblyContainingType<HumioRepository>();
+            x.AssemblyContainingType<IIssuesRepository>();
             x.WithDefaultConventions();
             x.LookForRegistries();
         });
@@ -39,9 +39,9 @@ public class HumioRepositoryTests
     //[Test]
     public void Should_get_24hour_overview()
     {
-        var repository = _container.GetInstance<IHumioRepository>();
+        var repository = _container.GetInstance<IIssuesRepository>();
 
-        var issues = repository.GetOverview("app-tst");
+        var issues = repository.GetIssues("app", "app-tst", "error");
 
         issues.Count.Should().BeGreaterThan(0);
         issues.Any(x => x.Service.Length > 0).Should().BeTrue ();
@@ -54,9 +54,9 @@ public class HumioRepositoryTests
     //[Test]
     public void Should_get_24hour_activity()
     {
-        var repository = _container.GetInstance<IHumioRepository>();
+        var repository = _container.GetInstance<IIssuesRepository>();
 
-        var activity = repository.GetActivity("app-tst", "24hours");
+        var activity = repository.GetIssuesActivity("app", "app-tst", "24hours", "error");
 
         activity.Count.Should().BeGreaterThan(0);
         activity.Any(x => x.Count > 0).Should().BeTrue();
@@ -67,9 +67,9 @@ public class HumioRepositoryTests
     //[Test]
     public void Should_get_24_hour_issue_activity()
     {
-        var repository = _container.GetInstance<IHumioRepository>();
+        var repository = _container.GetInstance<IIssuesRepository>();
 
-        var activity = repository.GetIssueActivity("app-tst", "24hours", _issue);
+        var activity = repository.GetIssueActivity("app", "app-tst", "24hours", _issue, "error");
 
         activity.Count.Should().BeGreaterThan(0);
         activity.Any(x => x.Count > 0).Should().BeTrue();
@@ -80,9 +80,9 @@ public class HumioRepositoryTests
     //[Test]
     public void Should_get_14_day_error_activity()
     {
-        var repository = _container.GetInstance<IHumioRepository>();
+        var repository = _container.GetInstance<IIssuesRepository>();
 
-        var activity = repository.GetIssueActivity("app-tst", "14days", _issue);
+        var activity = repository.GetIssueActivity("app","app-tst", "14days", _issue, "error");
 
         activity.Count.Should().BeGreaterThan(0);
         activity.Any(x => x.Count > 0).Should().BeTrue();
@@ -93,22 +93,12 @@ public class HumioRepositoryTests
     //[Test]
     public void Should_get_30_day_error_activity()
     {
-        var repository = _container.GetInstance<IHumioRepository>();
-        var activity = repository.GetIssueActivity("app-tst", "30days", _issue);
+        var repository = _container.GetInstance<IIssuesRepository>();
+        var activity = repository.GetIssueActivity("app", "app-tst", "30days", _issue, "error");
 
         activity.Count.Should().BeGreaterThan(0);
         activity.Any(x => x.Count > 0).Should().BeTrue();
         activity.Any(x => x.Bucket > DateTime.Now.AddDays(-2)).Should().BeTrue();
         activity.Any(x => x.Name.Length > 0).Should().BeTrue();
-    }
-    
-    //[Test]
-    public void Should_get_environments_from_config()
-    {
-        var repository = _container.GetInstance<IHumioRepository>();
-
-        var environments = repository.GetEnvironments();
-
-        environments.Count.Should().BeGreaterThan(0);
     }
 }
