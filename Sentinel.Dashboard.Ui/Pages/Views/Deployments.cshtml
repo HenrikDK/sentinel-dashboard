@@ -235,17 +235,15 @@
           this.$data.spaces = spaces;
         },
         fetchData(){
-          //fetch("/api/deployments")
-          fetch("/prometheus.json")
-          .then(r => r.json())
-          .then(j => {
+          fetch("/api/deployments")
+            .then(r => r.json())
+            .then(j => {
               if (j.status === "success"){
                   this.$data.deployments = j.data.result
               }
           });
           
-          //fetch("/api/alerts")
-          fetch("/alerts.json")
+          fetch("/api/alerts")
             .then(r => r.json())
             .then(j => {
                 if (j.status === "success"){
