@@ -1,0 +1,85 @@
+﻿<template id="search">
+  <div class="relative py-1" aria-label="Select Environment">
+    <div class="h-9 w-64 items-center flex justify-center box-border cursor-pointer border border-gray-300 outline-0 rounded 
+                bg-gray-200 text-gray-500 leading-snug outline-none 
+                data-[focus=true]:bg-gray-100 data-[focus=true]:border-gray-500 data-[focus=true]:text-gray-700 data-[focus=true]:fill-gray-500" tabindex="-1" :data-focus="hasFocus">
+      
+      <span aria-hidden="true" tabindex="0" role="button" @@click="search"
+            class="left-0 pl-1.5 absolute z-50 text-gray-500 opacity-40 hover:opacity-80 transition duration-300 flex-shrink-0 flex-grow-0 flex">
+        <span class="w-6 h-6 box-content inline-block">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+        </span>
+      </span>
+
+      <input id="search-input" v-model="value" name="search-box" type="text" placeholder="Search..."
+             @@focus="hasFocus = true" @@blur="hasFocus = false" @@keydown="onKeydown"
+             class="h-full w-full px-8 border-none outline-0 bg-transparent" />
+      
+      <template v-if="value.length < 1" name="shortcut-icon">
+        <span class="absolute right-0 mr-2 rounded shortcut text-gray-500 h-6 w-5 bg-gray-300 border-gray-400 border text-center" :title="'Press &quot;/&quot; to search'">/</span>
+      </template>
+    
+      <template v-if="value.length > 0" name="clear-icon">
+        <span aria-hidden="true" tabindex="0" role="button" aria-roledescription="❎" @@click="clear"
+              class="mr-2 right-0 absolute z-50 opacity-40 stroke-gray-500 transition duration-300 flex-shrink-0 flex-grow-0 flex hover:opacity-80">
+          <span class="w-6 h-6 py-px box-content inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+        </span>
+      </template>
+    </div>
+  </div>
+</template>
+
+<script type="module">
+  components["search"] = {
+    template: "#search",
+    data() {
+      return {
+        hasFocus: false,
+        value: '',
+      }
+    },
+    mounted() {
+      window.document.addEventListener('keydown', this.onDocumentKeydown);
+    },
+    watch: {
+      value(){
+         this.$emit('update:search', this.$data.value)
+      },
+    },
+    methods: {
+      search(){
+        this.$emit('update:search', this.$data.value)
+      },
+      clear(){
+        this.$data.value = ''
+      },
+      onKeydown(e){
+        if (e.key === 'Escape') {
+          this.$data.value = ''
+        }
+      },
+      onDocumentKeydown(e){
+        var control = document.getElementById("search-input")
+        if (e.key === '/' && e.target !== control.value &&
+          window.document.activeElement !== control.value &&
+          e.target instanceof HTMLInputElement === false &&
+          e.target instanceof HTMLSelectElement === false &&
+          e.target instanceof HTMLTextAreaElement === false)
+        {
+          e.preventDefault()
+           
+          control?.focus()
+          control?.select()
+        }
+      }
+    },
+    emits: ['update:search'],
+  };
+
+</script>
