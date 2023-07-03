@@ -30,7 +30,7 @@ public class PrometheusRepository : IPrometheusRepository
         var query = "count by (aks_space, namespace) (up{aks_version!=\"\", aks_space!=\"\"})";
         
         var result = _server.Value
-            .AppendPathSegment($"api/v1/query")
+            .AppendPathSegment("api/v1/query")
             .WithHeader("X-Scope-OrgId", _org.Value)
             .SetQueryParam("query", query)
             .WithBasicAuth(_username.Value, _password.Value)
