@@ -15,10 +15,10 @@
     <partial name="Views/Issue"/>
 }
 
-<nav-bar :environments="environments" @@no-environments="loadEnvironments"></nav-bar>
+<nav-bar :environments="spaces" :space="space" :env="env" @@search="(s) => search = s" @@no-environments="loadEnvironments"></nav-bar>
 
 <div class="h-screen">
     <main>
-        <router-view :environments="environments"></router-view>
+        <router-view :environments="spaces" :space="space" :env="env" :search="search"></router-view>
     </main>
 </div>
