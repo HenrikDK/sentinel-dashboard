@@ -1,6 +1,6 @@
 <template id="nav-bar">
     <header>
-      <div class="w-full bg-glass sticky-top fixed z-50">
+      <div class="w-full bg-glass sticky-top fixed z-50" :class="[$route.query?.kiosk ? 'hidden group-hover:block' : '']">
         <nav class="p-2 mx-auto max-w-screen-xl justify-between flex" aria-label="Main navigation">
           <div class="w-3/6 flex p-0 me-5">
             <a class="text-slate-600 hover:text-[#b42830] flex" href="/" aria-label="Sentinel">
