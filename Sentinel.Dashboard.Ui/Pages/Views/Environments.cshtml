@@ -1,4 +1,4 @@
-﻿<template id="environments">
+<template id="environments">
     <div class="flex justify-center">
         <div class="p-2">
             <br/>
@@ -26,19 +26,18 @@
 </template>
 
 <script type="module">
-    components["environments"] = {
-        template: "#environments",
-        data() {
-            return {
-                pods: {},
-                podData: [],
-            }
-        },
-        props: ['environments'],        
-        computed: {},
-    };
-    
-    routes.push({path:'/', name:"environments", component: components["environments"]})    
+import { ref } from 'vue'
+
+let setup = () => {
+  
+  return {};
+}
+
+components["environments"] = { 
+    template: "#environments",
+    props: ['environments'],
+    setup};
+routes.push({path:'/', name:"environments", component: components["environments"]})
 </script>
 
 <style>
