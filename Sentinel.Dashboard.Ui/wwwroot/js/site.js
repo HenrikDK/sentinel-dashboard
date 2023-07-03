@@ -46,6 +46,7 @@ function buildOverviewChart(category, data){
     options = {
         tooltip: {
             trigger: 'axis',
+            confine: true,
             axisPointer: {
                 type: 'shadow'
             },
