@@ -25,15 +25,24 @@
                 </g>
               </svg>
 
-              <span class="py-1 text-xl leading-8 font-semibold align-middle">@ViewData["Title"]</span>
+              <span class="py-1 text-xl font-semibold align-middle">@ViewData["Title"]</span>
             </router-link>
             
-            <template v-if="$route.path != '/'">
-              <span class="px-3 text-xl font-semibold align-middle">-</span>
-              <router-link :to="{ name: 'overview', params: { env: $route.params.env }}" class="text-slate-600 hover:text-[#b42830] text-xl font-semibold align-middle">
-                Environment: {{ $route.params.env }}
-              </router-link>
-            </template>
+            <router-link :to="getNavLink('app-issues')" :data-active="$route.name?.includes('app-issue')"
+                         class="py-2 px-4 text-slate-600 data-[active=true]:bg-gray-100 hover:bg-gray-100 hover:text-brand text-xl font-semibold align-middle">
+              App-Issues
+            </router-link>
+            <router-link :to="getNavLink('data-issues')"
+                         :data-active="$route.name?.includes('data-issue')"
+                         class="py-2 px-4 text-slate-600 data-[active=true]:bg-gray-100 hover:bg-gray-100 hover:text-brand text-xl font-semibold align-middle">
+              Data-Issues
+            </router-link>
+            
+            <router-link :to="getNavLink('deployments')"
+                         :data-active="$route.name?.includes('deployments')"
+                         class="py-2 px-4 text-slate-600 data-[active=true]:bg-gray-100 hover:bg-gray-100 hover:text-brand text-xl font-semibold align-middle">
+              Deployments
+            </router-link>
           </div>
     
           <div id="envNav" class="flex justify-center">
@@ -58,6 +67,41 @@
     components["nav-bar"] = {
       template: "#nav-bar",
       emits: ['search'],
+      methods: {
+        getNavLink(type){
+            if (type === 'app-issues'){
+              if (this.space && this.env && this.env.includes('-')){
+                return { name: 'app-issues', params: { env: this.env, space: this.space }, query: this.$route.query}
+              }
+              if (this.space && this.env && !this.env.includes('-')){
+                return { name: 'app-issues', params: { env: this.env + '-prd', space: this.space }, query: this.$route.query}
+              }
+              
+              return { name: 'app-environments', query: this.$route.query}              
+            }
+            if (type === 'data-issues'){
+              if (this.space && this.env && this.env.includes('-')){
+                return { name: 'data-issues', params: { env: this.env, space: this.space }, query: this.$route.query}
+              }
+              if (this.space && this.env && !this.env.includes('-')){
+                return { name: 'data-issues', params: { env: this.env + '-prd', space: this.space }, query: this.$route.query}
+              }
+              
+              return { name: 'data-environments', query: this.$route.query}              
+            }            
+            if (type === 'deployments'){
+              if (this.space && this.env && !this.$route.name?.includes('deployments')){
+                return { name: 'deployments-namespace', params: { env: this.env.split('-')[0], space: this.space }, query: this.$route.query }
+              }
+              if (this.space && !this.$route.name?.includes('deployments')){
+                return { name: 'deployments-space', params: {space: this.space}, query: this.$route.query }
+              }
+              return { name: 'deployments', query: this.$route.query }
+            }
+            
+            return { name: 'deployments', query: this.$route.query }                      
+        }
+      },
       props: ['environments', 'space', 'env']
     };
 </script>
