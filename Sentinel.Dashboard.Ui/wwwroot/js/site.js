@@ -1,4 +1,4 @@
-function miniChartFormatter(params) {
+﻿function miniChartFormatter(params) {
     if (Array.isArray(params))
     {
         output = '<div style="font-size:14px;color:#666;font-weight:400;line-height:1;">' + params[0].name + '</div>'
@@ -137,13 +137,6 @@ function buildOverviewMiniChart(category, data){
     };
     
     return options;
-}
-
-async function loadMiniChart(environment, issueId){
-    let options = await fetch("./?handler=issueActivity&issueId=" + issueId + "&environment=" + environment)
-        .then(r => r.json())
-        .then(json => buildOverviewMiniChart(json.categories, json.series));
-    return {options, issueId}
 }
 
 function formatBytes(bytes, decimals = 2) {
