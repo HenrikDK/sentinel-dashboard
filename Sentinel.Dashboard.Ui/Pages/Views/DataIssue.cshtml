@@ -1,0 +1,378 @@
+﻿<template id="data-issue">
+<div class="flex w-full max-w-screen-xl mx-auto justify-center py-4">
+  <div class="w-full content-start grid grid-cols-[minmax(100px,_auto)_325px] gap-2">
+    <section class="pr-0 border-r border-gray-300">
+
+      <div v-if="error.id" class="mr-3 mb-3">
+        <div v-if="error.id" class="flex justify-between">
+          <div class="flex mr-3">
+            <div v-if="error.id">
+              <div class="text-sm text-gray-500 font-semibold leading-5">
+                <div>
+                  <span>Event - </span> 
+                  <a class="text-blue-600 hover:underline uppercase" href="javascript:void(0)" v-on:click="getJson(error.data)">JSON {{ formatBytes(error.size) }}</a>
+                  <span> - </span> 
+                  <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/data-events?timeSpan=30days`" target="_blank">Query</a>
+                </div>
+              </div>
+              <div class="mx-2 w-0.5 min-h-[1em] bg-gray-300 self-stretch inline-block"></div>
+              <span>
+                Id: {{ error.id }} - (Created: {{ error.created }})
+              </span>
+            </div>
+          </div>
+          
+          <div class="flex">
+            <div>
+              <div class="shadow-md flex rounded-md">
+                <button class="rounded-l-md bg-gray-100 px-3 py-2 text-gray-700 leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300"
+                        v-on:click="currentIndex = index.length - 1" :disabled="currentIndex > index.length - 2">
+                  <span class="flex">
+                    <svg viewBox="0 0 16 16" fill="currentColor" height="12px" width="12px"><path d="M15.25,15.48a.69.69,0,0,1-.37-.1L3.22,8.65a.75.75,0,0,1,0-1.3L14.88.62a.75.75,0,0,1,.74,0,.73.73,0,0,1,.38.65V14.73a.73.73,0,0,1-.38.65A.69.69,0,0,1,15.25,15.48ZM5.09,8l9.41,5.43V2.57Z"></path><path d="M.75,15.94A.76.76,0,0,1,0,15.19V.81A.76.76,0,0,1,.75.06.76.76,0,0,1,1.5.81V15.19A.76.76,0,0,1,.75,15.94Z"></path></svg>
+                  </span>
+                </button>
+                <button class="bg-gray-100 px-3 py-2 text-gray-700 text-sm leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300" 
+                        v-on:click="currentIndex += 1" :disabled="currentIndex > index.length - 2">Older</button>
+                <button class="bg-gray-100 px-3 py-2 text-gray-700 text-sm leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300"
+                        v-on:click="currentIndex -= 1" :disabled="currentIndex < 1">Newer</button>
+                <button class="rounded-r-md bg-gray-100 px-3 py-2 text-gray-700 leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300"
+                        v-on:click="currentIndex = 0" :disabled="currentIndex < 1">
+                  <span class="flex">
+                    <svg viewBox="0 0 16 16" fill="currentColor" height="12px" width="12px"><path d="M.75,15.48a.69.69,0,0,1-.37-.1A.73.73,0,0,1,0,14.73V1.27A.73.73,0,0,1,.38.62a.75.75,0,0,1,.74,0L12.78,7.35a.75.75,0,0,1,0,1.3L1.12,15.38A.69.69,0,0,1,.75,15.48ZM1.5,2.57V13.43L10.91,8Z"></path><path d="M15.25,15.94a.76.76,0,0,1-.75-.75V.81a.75.75,0,1,1,1.5,0V15.19A.76.76,0,0,1,15.25,15.94Z"></path></svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="mr-3 mt-48 flex w-full justify-center">
+        <div class="">
+          <spinner></spinner>
+        </div>
+      </div>
+
+      <div v-if="error.data" class="mr-3 mb-3">
+        <div class="text-sm text-gray-500 uppercase font-semibold leading-5 mb-3">
+          Exception Data
+        </div>
+        <div class="flex flex-wrap text-xs mb-3 text-gray-800">
+          <template v-for="(value, key, index) in error?.data?.message?.Properties?.ExceptionDetail?.Data">
+            <li v-if="validValue(value)" class="flex whitespace-nowrap shadow-sm rounded mr-2 mb-2 leading-4 max-w-full border border-solid border-gray-300">
+              <span class="py-1 px-2 min-w-fit whitespace-nowrap flex item-center">{{ key }}</span>
+              <span class="py-1 px-2 min-w-0 max-w-full whitespace-nowrap font-mono flex bg-slate-100 items-center border-l border-l-solid border-gray-300 truncate">{{ value }}</span>
+            </li>
+          </template>
+          <template v-for="(value, key, index) in error?.data?.message?.Properties?.ExceptionDetail">
+            <li v-if="validValue(value)" class="flex whitespace-nowrap shadow-sm rounded mr-2 mb-2 leading-4 max-w-full border border-solid border-gray-300">
+              <span class="py-1 px-2 min-w-fit whitespace-nowrap flex item-center">{{ key }}</span>
+              <span class="py-1 px-2 min-w-0 max-w-full whitespace-nowrap font-mono flex bg-slate-100 items-center border-l border-l-solid border-gray-300 truncate">{{ value }}</span>
+            </li>
+          </template>
+          <template v-for="(value, key, index) in error?.data?.message?.Properties">
+            <li v-if="validValue(value)" class="flex whitespace-nowrap shadow-sm rounded mr-2 mb-2 leading-4 max-w-full border border-solid border-gray-300">
+              <span class="py-1 px-2 min-w-fit whitespace-nowrap flex item-center">{{ key }}</span>
+              <span class="py-1 px-2 min-w-0 max-w-full whitespace-nowrap font-mono flex bg-slate-100 items-center border-l border-l-solid border-gray-300 truncate">{{ value }}</span>
+            </li>
+          </template>
+        </div>
+        <hr>
+      </div>
+
+      <div v-if="error.data" class="mr-3 mb-3">
+        <div v-if="error.id" class="flex justify-between mb-4">
+          <div class="flex mr-3">
+            <div v-if="error.id">
+              <div class="text-sm text-gray-500 uppercase font-semibold leading-5">
+                Details
+              </div>
+              <div class="mx-2 w-0.5 min-h-[1em] bg-gray-300 self-stretch inline-block"></div>
+              <span v-if="error.data.message.RenderedMessage">
+                {{ error.data.message.RenderedMessage }}
+              </span>
+              <span v-else>
+                {{ error.data.message.MessageTemplate }}
+              </span>
+            </div>
+          </div>
+          <div>
+            <div class="shadow-md flex rounded-md">
+              <button @@click="display = 'app'" :aria-selected="display === 'app'" class="rounded-l-md bg-gray-100 px-3 py-2 text-gray-700 leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300 aria-selected:bg-gray-200">App only</button>
+              <button @@click="display = 'full'" :aria-selected="display === 'full'" class="bg-gray-100 px-3 py-2 text-gray-700 leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300 aria-selected:bg-gray-200">Full</button>
+              <button @@click="display = 'raw'" :aria-selected="display === 'raw'" class="rounded-r-md bg-gray-100 px-3 py-2 text-gray-700 leading-tight flex items-center whitespace-nowrap hover:bg-gray-200 hover:text-brand hover:shadow-lg disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300 aria-selected:bg-gray-200">Raw</button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="error?.data?.message?.Properties?.ExceptionDetail" class="mb-3">
+          <div v-if="error?.data?.message?.Properties?.ExceptionDetail?.Type"
+               class="leading-5 my-2 py-2 break-words text-2xl">
+            {{ error.data.message.Properties.ExceptionDetail.Type }}
+          </div>
+          <span v-if="error?.data?.message?.Properties?.ExceptionDetail?.Message">
+            {{ error.data.message.Properties.ExceptionDetail.Message }}
+          </span>
+        </div>
+
+        <div v-if="error?.data?.message?.Exception && display !== 'raw'" 
+             class="mb-3 text-xs	border border-solid border-gray-300 shadow-md text-gray font-mono">
+          <ul class="list-none">
+            <template v-for="line in parseStackTrace(error.data.message.Exception)">
+              <li v-if="shouldDisplay(line.system, display)" class="bg-slate-200 border-b border-gray-300 aria-hidden:bg-gray-100" :aria-hidden="line.system">
+                <div class="py-2 px-3 break-words">
+                  <div>
+                    <span v-if="line.file">{{ line.file }}</span>
+                    <span v-if="line.file" class="mx-1 text-gray-500"> in </span>
+                    <span>{{ line.method }}</span>
+                    <span v-if="line.line" class="mx-1 text-gray-500"> at line </span>
+                    <span v-if="line.line">{{ line.line }}</span>
+                  </div>
+                </div>
+              </li>
+            </template>
+          </ul>
+        </div>
+        
+        <div v-else class="mb-3 border border-solid border-gray-300 shadow-md">
+          <div class="p-3">
+            <pre v-if="error?.data?.message?.Exception" 
+                class="font-mono text-xs text-gray-800 whitespace-pre-wrap break-words max-w-full">
+            {{ error.data.message.Exception }}
+            </pre>
+            <pre v-else class="font-mono text-xs text-gray-800">No stack trace found!</pre>
+          </div>
+        </div>
+        <hr>
+      </div>
+
+      <div v-if="error?.data?.message?.Properties?.ExceptionDetail?.InnerException" class="mr-3">
+        <div class="text-sm text-gray-500 uppercase font-semibold leading-5 mb-3">
+          Inner Exception Data
+        </div>
+        <div class="flex flex-wrap text-xs text-gray-800 mb-3">
+          <template v-for="(value, key, index) in error?.data?.message?.Properties?.ExceptionDetail?.InnerException?.Data">
+            <li v-if="validValue(value)" class="flex whitespace-nowrap shadow-sm rounded mr-2 mb-2 leading-4 max-w-full border border-solid border-gray-300">
+              <span class="py-1 px-2 min-w-fit whitespace-nowrap flex item-center">{{ key }}</span>
+              <span class="py-1 px-2 min-w-0 max-w-full whitespace-nowrap font-mono flex bg-slate-100 items-center border-l border-l-solid border-gray-300 truncate">{{ value }}</span>
+            </li>
+          </template>
+          <template v-for="(value, key, index) in error?.data?.message?.Properties?.ExceptionDetail?.InnerException">
+            <li v-if="validValue(value)" class="flex whitespace-nowrap shadow-sm rounded mr-2 mb-2 leading-4 max-w-full border border-solid border-gray-300">
+              <span class="py-1 px-2 min-w-fit whitespace-nowrap flex item-center">{{ key }}</span>
+              <span class="py-1 px-2 min-w-0 max-w-full whitespace-nowrap font-mono flex bg-slate-100 items-center border-l border-l-solid border-gray-300 truncate">{{ value }}</span>
+            </li>
+          </template>
+        </div>
+        <hr/>
+      </div>
+
+    </section>
+
+    <aside class="p-3">
+      <div v-if="issue.id" class="col text-sm" :set="version = issue.containerImage.split(':').slice(-1)[0]">
+        <span class="mb-0 text-sm font-semibold text-slate-700">Environment:</span>
+        <div class="mb-3">
+          <span v-if="issue.lastSeen">{{ $route.params.env }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+        
+        <span class="mb-0 text-sm font-semibold text-slate-700">Service:</span>
+        <div class="mb-3">
+          <span v-if="issue.service">{{ issue.service }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+
+        <span class="mb-0 text-sm font-semibold text-slate-700">Version:</span>
+        <div class="mb-3">
+          <span v-if="issue.containerImage">{{ version }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+        
+        <span class="mb-0 text-sm font-semibold text-slate-700">Deployed:</span>
+        <div class="mb-3">
+          <span v-if="issue.containerImage">{{ version.split('-')[0] + ' - ' + toTimeAgo(version.split('-')[0]) }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+        
+        <div class="flex justify-between mb-2">
+          <div class="flex">
+            <span class="text-sm font-semibold text-slate-700 me-2">Last 24 Hours:</span>
+            <span v-if="dayOptions.series">{{ dayOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
+            <span v-else>&nbsp;</span>
+          </div>
+          <div>
+            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/data-minichart`" target="_blank">Query</a>    
+          </div>
+        </div>
+        <div class="mb-3">
+          <v-chart v-if="dayOptions" :option="dayOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
+        </div>
+
+        <div class="flex justify-between mb-2">
+          <div class="flex">
+            <span class="text-sm font-semibold text-slate-700 me-2">Last 30 Days:</span>
+            <span v-if="monthOptions.series">{{ monthOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
+            <span v-else>&nbsp;</span>
+          </div>
+          <div>
+            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/data-minichart?timeSpan=30days`" target="_blank">Query</a>    
+          </div>
+        </div>
+        <div class="mb-3">
+          <v-chart v-if="monthOptions" :option="monthOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
+        </div>
+
+        <span class="mb-0 text-sm font-semibold text-slate-700">Last Seen:</span>
+        <div class="mb-3">
+          <span v-if="issue.lastSeen">{{ toTimeAgo(issue.lastSeen) }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+
+        <span class="mb-0 text-sm font-semibold text-slate-700">First Seen:</span>
+        <div class="mb-3">
+          <span v-if="issue.firstSeen">{{ toTimeAgo(issue.firstSeen) }}</span>
+          <span v-else>&nbsp;</span>
+        </div>
+      </div>
+      <div v-else class="my-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
+      </div>      
+
+      <hr>
+      
+      <div v-if="quote" class="pt-4">
+        <p>
+          {{ quote }}
+        </p>
+      </div>
+      <div v-else class="mt-12 flex w-full justify-center">
+        <div>
+          <spinner></spinner>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+<div v-if="error.data" class="h-20">
+  &nbsp;
+</div>
+</div>
+</template>
+
+<script type="module">
+  components["data-issue"] = {
+    template: "#data-issue",
+    data: function () {
+      return {
+        error: {},
+        issue: {},
+        index: [],
+        currentIndex: -1,
+        initOptions: {
+          renderer: "svg"
+        },
+        quote: "",
+        display: "app",
+        monthOptions: {},
+        dayOptions: {},
+      };
+    },
+    methods: {
+      formatBytes: formatBytes,
+      getJson(value) {
+        var new_page = window.open();
+        new_page.document.write(JSON.stringify(value));
+      },
+      shouldDisplay(system, display) {
+        return (system && display === 'full') || !system
+      },
+      validValue(value) {
+          return !((typeof(value) === 'object' && value !== null) || value === null || value === "")
+      },
+      toTimeAgo(value) {
+        return moment(value).fromNow();
+      },
+      parseStackTrace (value) {
+        if (!value) return [];
+        
+        let lines = value.split(/\r?\n/);
+        let trace = lines.map(x => {
+          var method = x;
+          var file = '';
+          var line = '';
+          var system = (x.indexOf('Microsoft.') > 0 || x.indexOf('System.') > 0);
+          
+          if (method.indexOf('   at ') === 0){
+            method = method.replace('   at ', '');
+          }
+          
+          if (method.indexOf('in ') > 0){
+            let segments = method.split("in ");
+            method = segments[0];
+            file = segments[1];
+          }
+          
+          if (file.indexOf(':line') > 0){
+            line = file.substring(file.indexOf(':line') + 6)
+            file = file.substring(0, file.indexOf(':line'))
+          }
+          
+          return {method, file, line, system}
+        })
+        
+        return trace
+      }
+    },
+    watch: {
+      currentIndex(value) {
+        var error = this.$data.index[this.$data.currentIndex];
+        try{
+          if (typeof error.data === 'string' || error.data instanceof String){
+            error.data = JSON.parse(error.data);
+          }
+        } catch (e){
+          error.dataRecieved = error.data;
+          error.data = { message: {}};
+        }
+        try{
+          if (typeof error.data.message === 'string' || error.data.message instanceof String){
+            error.data.message = JSON.parse(error.data.message);
+          }
+        } catch (e){}
+        this.$data.error = error;
+        }
+      },
+    async mounted () {
+      let issue = this.$route.params.issue;
+      let env = this.$route.params.env;
+      let space = this.$route.params.space;
+      fetch(`/api/spaces/${space}/environments/${env}/data-issues/${issue}?timeSpan=24hours`)
+        .then(r => r.json())
+        .then(j => {
+          this.$data.dayOptions = buildDetailMiniChart(j);
+          this.$data.issue = j.issue;
+        });
+      
+      fetch(`/api/spaces/${space}/environments/${env}/data-issues/${issue}?timeSpan=30days`)
+        .then(r => r.json())
+        .then(j => this.$data.monthOptions = buildDetailMiniChart(j));
+      
+      fetch(`/api/spaces/${space}/environments/${env}/data-issues/${issue}/events`)
+      .then(r => r.json())
+      .then(j => {
+        this.$data.index = j;
+        this.$data.currentIndex = 0;
+      });      
+      
+      fetch("/api/quote")
+      .then(r => r.json())
+      .then(j => {
+        this.$data.quote = j.data[0]
+      })
+    }
+  };
+
+  routes.push({path:'/spaces/:space/environments/:env/data-issues/:issue', name: "data-issue", component: components["data-issue"]})
+</script>
