@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Sentinel.Dashboard.Ui.Model.Repositories;
 
-public class FakioRepository : IHumioRepository
+public class FakeHumioRepository : IHumioRepository
 {
     public IList<Issue> GetOverview(string environment)
     {
