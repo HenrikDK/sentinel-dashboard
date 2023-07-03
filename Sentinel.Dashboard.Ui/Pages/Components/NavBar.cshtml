@@ -2,7 +2,7 @@
     <header class="group">
       <div class="w-full bg-glass sticky-top fixed z-50" :class="[$route.query?.kiosk ? 'hidden group-hover:block' : '']">
         <nav class="mx-auto max-w-screen-xl justify-between flex" aria-label="Main navigation">
-          <div class="flex grow p-0 me-5">
+          <div class="flex grow me-5 items-center">
             <router-link :to="{name: 'deployments', query: $route.query }" href="/" aria-label="Sentinel"
                          class="text-slate-600 hover:text-brand flex items-center">
               
