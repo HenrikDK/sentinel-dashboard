@@ -25,6 +25,20 @@ public class PrometheusRepository : IPrometheusRepository
         _org = new Lazy<string>(() => _configuration.GetValue("prometheus-org", ""));
     }
     
+    public string GetDeployments()
+    {
+        var query = "up{aks_version!=\"\", aks_space!=\"\"}";
+        
+        var result = _server.Value
+            .AppendPathSegment("api/v1/query")
+            .WithHeader("X-Scope-OrgId", _org.Value)
+            .SetQueryParam("query", query)
+            .WithBasicAuth(_username.Value, _password.Value)
+            .GetStringAsync().Result;
+
+        return result;
+    }
+
     public string GetEnvironments()
     {
         var query = "count by (aks_space, namespace) (up{aks_version!=\"\", aks_space!=\"\"})";
@@ -39,4 +53,17 @@ public class PrometheusRepository : IPrometheusRepository
         return result;
     }
 
+    public string GetAlerts()
+    {
+        var query = "ALERTS{alertstate=\"firing\", aks_space!=\"\"}";
+        
+        var result = _server.Value
+            .AppendPathSegment("api/v1/query")
+            .WithHeader("X-Scope-OrgId", _org.Value)
+            .SetQueryParam("query", query)
+            .WithBasicAuth(_username.Value, _password.Value)
+            .GetStringAsync().Result;
+
+        return result;
+    }
 }

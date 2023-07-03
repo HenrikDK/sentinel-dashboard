@@ -29,11 +29,31 @@ public class PrometheusRepositoryTests
     }
     
     //[Test]
+    public void Should_get_deployments()
+    {
+        var repository = _container.GetInstance<IPrometheusRepository>();
+
+        var environments = repository.GetDeployments();
+
+        environments.Should().NotBeNullOrEmpty();
+    }
+    
+    //[Test]
     public void Should_get_environments()
     {
         var repository = _container.GetInstance<IPrometheusRepository>();
 
         var environments = repository.GetEnvironments();
+
+        environments.Should().NotBeNullOrEmpty();
+    }
+    
+    //[Test]
+    public void Should_get_alerts()
+    {
+        var repository = _container.GetInstance<IPrometheusRepository>();
+
+        var environments = repository.GetAlerts();
 
         environments.Should().NotBeNullOrEmpty();
     }
