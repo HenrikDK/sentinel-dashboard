@@ -12,6 +12,19 @@ public class ApiController : ControllerBase
         _prometheusRepository = prometheusRepository;
     }
 
+    [HttpGet("api/quote")]
+    public ContentResult OnGetQuote()
+    {
+        var result = "http://loremricksum.com/api/?paragraphs=1&quotes=1"
+            .GetStringAsync().Result;
+
+        return new ContentResult
+        {
+            Content = result,
+            ContentType = "application/json"
+        };
+    }
+    
     [HttpGet("api/environments")]
     public ContentResult OnGetEnvironments()
     {
