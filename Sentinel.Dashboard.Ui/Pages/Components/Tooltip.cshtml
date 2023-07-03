@@ -1,0 +1,71 @@
+<template id="tooltip">
+  <div class="inline-block">
+    <div ref="reference" class="inline-block" :class="padding" @@mouseenter="show" @@mouseleave="hide">
+      <slot name="cell"/>
+    </div>
+    <div ref="floating" role="tooltip" class="absolute items-center z-50 rounded shadow-lg p-2 text-black bg-gray-100"
+         :class="[visible ? 'visible opacity-100' : 'invisible']">
+      <div class="inline-block">
+        <slot name="tooltip"/>
+      </div>
+      
+      <div ref="arrow" class="absolute bg-gray-100 h-2 w-2 rotate-45 z-20"></div>
+    </div>
+  </div>
+</template>
+
+<script type="module">
+  import { computePosition, offset, flip, shift, arrow } from "@@floating-ui/dom";
+    
+  components["tooltip"] = {
+    template: "#tooltip",
+      data() {
+        return {
+          visible: false,
+        }
+      },
+      methods:{
+       async show(e){
+         computePosition(this.$refs.reference, this.$refs.floating, {
+           placement: this.$props.placement,
+           middleware: [offset(8), flip(), shift({ padding:5 }), arrow({ element: this.$refs.arrow })]
+         }).then(({ x, y, middlewareData, placement }) => {
+           
+           Object.assign(this.$refs.floating.style, {
+             top: `${y}px`,
+             left: `${x}px`
+           });
+                      
+           const opposingSide = {
+             right:"left",
+             left: "right",
+             top: "bottom",
+             bottom: "top"
+           }[placement.split('-')[0]];
+           
+           const { x: arrowX, y: arrowY } = middlewareData.arrow;
+        
+           Object.assign(this.$refs.arrow.style, {
+             left: arrowX ? `${arrowX}px`: "",
+             top: arrowY? `${arrowY}px` : "",
+             bottom: "",
+             right: "",
+             [opposingSide]: '-4px'
+           });
+         });
+         
+         this.visible = true;
+       },
+       async hide(e){
+         this.visible = false;
+       }
+      },
+      props: {
+        padding: String,
+        placement: {
+          type: String,
+          default: 'bottom'
+        }
+      }
+  };
+</script>
