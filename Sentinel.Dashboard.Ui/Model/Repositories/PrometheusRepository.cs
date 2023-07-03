@@ -19,7 +19,7 @@ public class PrometheusRepository : IPrometheusRepository
     {
         _configuration = configuration;
         
-        _server = new Lazy<string>(() => _configuration.GetValue("prometheus-api", "https://mimir.azure.dsb.dk/prometheus"));
+        _server = new Lazy<string>(() => _configuration.GetValue("prometheus-api", ""));
         _username = new Lazy<string>(() => _configuration.GetValue("prometheus-user", ""));
         _password = new Lazy<string>(() => _configuration.GetValue("prometheus-pass", ""));
         _org = new Lazy<string>(() => _configuration.GetValue("prometheus-org", ""));

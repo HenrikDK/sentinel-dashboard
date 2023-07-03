@@ -25,13 +25,13 @@
                                     <li v-for="e in s.environments">
                                         <template v-if="$route.name == 'app-environments'">
                                             <router-link :to="{ name: 'app-issues', params: { env: e, space: s.space }, query: $route.query }" 
-                                                         class="text-dsb hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                         class="text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
                                                 {{ e }}
                                             </router-link>
                                         </template>
                                         <template v-else>
                                             <router-link :to="{ name: 'data-issues', params: { env: e, space: s.space }, query: $route.query }" 
-                                                         class="text-dsb hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                         class="text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
                                                 {{ e }}
                                             </router-link>
                                         </template>
