@@ -1,4 +1,4 @@
-﻿function miniChartFormatter(params) {
+function miniChartFormatter(params) {
     if (Array.isArray(params))
     {
         output = '<div style="font-size:14px;color:#666;font-weight:400;line-height:1;">' + params[0].name + '</div>'
@@ -44,15 +44,6 @@ function overviewChartFormatter(params) {
 
 function buildOverviewChart(category, data){
     options = {
-        title: {
-            text: "Errors over the last 24 hours",
-            textStyle: {
-                fontWeight: "normal",
-                fontSize: 16,
-                color: "grey"
-            },
-            padding: [5, 0, 0, 40]
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: {
