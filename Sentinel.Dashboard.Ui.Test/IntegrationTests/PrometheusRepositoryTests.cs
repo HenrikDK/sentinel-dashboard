@@ -27,9 +27,9 @@ public class PrometheusRepositoryTests
         registry.AddMemoryCache();
         _container = new Container(registry);
     }
-
+    
     //[Test]
-    public void Should_get_environments_from_config()
+    public void Should_get_environments()
     {
         var repository = _container.GetInstance<IPrometheusRepository>();
 
