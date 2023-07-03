@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = "_Layout";
@@ -6,18 +6,22 @@
 }
 
 @section VueComponents {
+    <partial name="Components/DeploymentBadge"/>
+    <partial name="Components/DeploymentBar"/>
+    <partial name="Components/DeploymentDetails"/>
     <partial name="Components/EnvironmentSelect"/>
     <partial name="Components/NavBar"/>
     <partial name="Components/Search"/>
     <partial name="Components/Spinner"/>
+    <partial name="Components/Tooltip"/>
     
     <partial name="Views/AppIssues"/>
     <partial name="Views/AppIssue"/>
     <partial name="Views/DataIssues"/>
     <partial name="Views/DataIssue"/>
+    <partial name="Views/Deployments"/>
     <partial name="Views/Environments"/>
-    <partial name="Views/Overview"/>
-    <partial name="Views/Issue"/>
+    <partial name="Views/Live"/>
 }
 
 <nav-bar :environments="spaces" :space="space" :env="env" @@search="(s) => search = s" @@no-environments="loadEnvironments"></nav-bar>
