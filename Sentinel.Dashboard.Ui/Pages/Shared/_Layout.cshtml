@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <link rel="icon" href="favicon.svg" asp-append-version="true">
 <link rel="mask-icon" href="favicon.svg" color="#326ce5">
@@ -66,38 +66,88 @@
 @RenderSection("Scripts", required: false)
 
 <script type="module">
-   import { createApp } from 'vue'
-   import { createRouter, createWebHashHistory } from 'vue-router'
-   import { default as ECharts } from 'vue-echarts'
+  import { createApp } from 'vue'
+  import { createRouter, createWebHashHistory } from 'vue-router'
+  import { default as ECharts } from 'vue-echarts'
     
-   const router = createRouter({
-     history: createWebHashHistory(),
-     routes
-   })
-    
-   const app = createApp({
-   methods: {
-     loadEnvironments() {
-       fetch("/?handler=environments")
-         .then(r => r.json())
-         .then(json => (this.environments = json));
-     }    
-   },
-   mounted () {
-     this.loadEnvironments();     
-   },
-   data() {
+  const router = createRouter({
+    history: createWebHashHistory(),
+    routes
+  })
+
+  const app = createApp({
+    data() {
      return {
+       search: '',
+       space: undefined,
+       env: undefined,
        envVisible: false,
+       spaces: [],
        environments: []
      }
-   }})
-   .component('v-chart', ECharts)
-   Object.entries(components).forEach(([k,v]) =>{
-      app.component(k, v)
-   });
-   app.use(router)
-   app.mount('#app');
+    },
+    methods: {
+      loadEnvironments() {
+        fetch("/api/environments")
+          .then(r => r.json())
+          .then(j => {
+            if (j.status === "success"){
+              this.environments = j.data.result
+            }
+          });
+        }
+    },
+    watch: {
+      environments(value) {
+        let grouped = _.groupBy(value, x => x.metric.aks_space);
+        let types = ['prd','uat','tst','dev', 'sit'];
+        let spaces = [];
+        Object.keys(grouped).sort().forEach(g => {
+          let metrics = grouped[g];
+          let roots = metrics.map(x => x.metric.namespace.split('-')[0]);
+          roots = Array.from(new Set(roots)).sort();
+          roots.forEach(r => {
+            let namespace = {
+              'space': g,
+              'root': r,
+              'environments': []
+            }
+            
+            types.forEach(x => {
+              let matches = metrics.filter(m => m.metric.namespace === r + "-" + x)
+              if (matches.length > 0){
+                namespace.environments.push(matches[0].metric.namespace);
+              }
+            });
+            
+            spaces.push(namespace)
+          });
+          
+        });
+        
+        this.spaces = spaces;
+      }
+    },
+    async mounted () {      
+      this.$watch(()=> this.$route.path, (to, from)=> {
+        this.space = this.$route.params.space
+        this.env = this.$route.params.env        
+      })
+      
+      this.loadEnvironments();
+      
+      this.timer = setInterval(this.loadEnvironments, 30000);
+    },
+    destroy() {
+      clearInterval(this.timer)
+    },
+  })
+  .component('v-chart', ECharts)
+  Object.entries(components).forEach(([k,v]) =>{
+    app.component(k, v)
+  });
+  app.use(router)
+  app.mount('#app');
 </script>
 </body>
 </html>
