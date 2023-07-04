@@ -7,14 +7,13 @@
 </template>
 
 <script>
-    components["spinner"] = {
-      template: "#spinner",
-      props:{
-        styling: {
-            type: String,
-            required: false,
-            default: 'inline w-10 h-10 mr-2 text-gray-200 animate-spin fill-brand'
-        },
-      }
-    };
+components["spinner"] = { template: "#spinner",
+  props: {
+    styling: {
+        type: String,
+        required: false,
+        default: 'inline w-10 h-10 mr-2 text-gray-200 animate-spin fill-brand'
+    },
+  }
+};
 </script>
