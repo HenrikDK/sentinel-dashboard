@@ -121,7 +121,7 @@ let setup = () => {
   function clickHandler(event) {
     const { target } = event;
   
-    if (!el.value.contains(target)) {
+    if (!el?.value?.contains(target)) {
        isOpen.value = false;
     }
   }
