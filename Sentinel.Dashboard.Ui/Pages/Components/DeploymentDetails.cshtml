@@ -1,39 +1,35 @@
 <template id="deployment-details">
-    <div class="self-center hover:bg-gray-100 w-64 items-center text-sm">
-        <div v-if="deployment.alerts.length > 0 || !deployment.metrics" class="font-bold">
-            Alerts:
-            <div v-for="a in deployment.alerts" class="pl-3 text-red-600">{{ a.metric.alertname }}</div>
-            <div v-if="!deployment.metrics" class="pl-3 text-orange-500 font-bold">No data from metrics endpoint! Is the app running?</div>
-        </div>
-        <div>
-            Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
-            by <span class="font-bold"> {{ deployment.instance.metric.github_user}} </span>
-        </div>
-        <div v-if="deployment.instance.metric.aks_systemid != 'no'">
-            System Id: <span class="font-bold">{{ deployment.instance.metric.aks_systemid }}</span>
-        </div>
-        <div>
-            Branch: <span class="font-bold">{{ deployment.instance.metric.github_branch }}</span>
-        </div>
-        <div>
-            Metrics: <span class="font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</span>
-        </div>
+  <div class="self-center hover:bg-gray-100 w-64 items-center text-sm">
+    <div v-if="deployment.alerts.length > 0 || !deployment.metrics" class="font-bold">
+        Alerts:
+        <div v-for="a in deployment.alerts" class="pl-3 text-red-600">{{ a.metric.alertname }}</div>
+        <div v-if="!deployment.metrics" class="pl-3 text-orange-500 font-bold">No data from metrics endpoint! Is the app running?</div>
     </div>
+    <div>
+        Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
+        by <span class="font-bold"> {{ deployment.instance.metric.github_user}} </span>
+    </div>
+    <div v-if="deployment.instance.metric.aks_systemid != 'no'">
+        System Id: <span class="font-bold">{{ deployment.instance.metric.aks_systemid }}</span>
+    </div>
+    <div>
+        Branch: <span class="font-bold">{{ deployment.instance.metric.github_branch }}</span>
+    </div>
+    <div>
+        Metrics: <span class="font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</span>
+    </div>
+  </div>
 </template>
 
-<script>
-    components["deployment-details"] = {
-      template: "#deployment-details",
-      props: {
-          deployment:{
-              type: Object
-          }
-      },
-      methods: {
-        toRelative(value) {
-          const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
-          return past.toRelativeCalendar({locale: "en"});
-        },          
-      },
-    };
+<script type="module">
+let setup = () => {
+  function toRelative(value) {
+    const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
+    return past.toRelativeCalendar({locale: "en"});
+  }
+  
+  return { toRelative }
+}
+
+components["deployment-details"] = { template: "#deployment-details", props: ['deployment'], setup};
 </script>
