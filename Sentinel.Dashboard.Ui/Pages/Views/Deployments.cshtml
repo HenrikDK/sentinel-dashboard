@@ -1,4 +1,4 @@
-<template id="deployments">
+﻿<template id="deployments">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start relative">
     
     <template v-if="!$route.params.env && !$route.params.space && !this.search && spaces.length > 0">
@@ -46,10 +46,10 @@
             <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
               <template v-if="ns.environments.includes(e)">
                 <div v-if="e != 'prd'"
-                     class="pl-3 flex w-56 text-gray-500">
+                     class="pl-3 flex w-60 text-gray-500">
                   {{ e.toUpperCase() }}
                 </div>
-                <div v-else class="pl-3 flex w-56 justify-between items-center">
+                <div v-else class="pl-3 flex w-60 justify-between items-center">
                   <div class="text-gray-500">
                     {{ e.toUpperCase() }}
                   </div>
