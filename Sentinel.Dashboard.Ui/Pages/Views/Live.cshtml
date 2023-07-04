@@ -66,65 +66,47 @@
 </template>
 
 <script type="module">
-    components["live"] = {
-      template: "#live",
-      data() {
-        return {
-          loading: true,
-          activity: {
-            alerts: [],
-            warnings: [],
-            deploying: [],
-          },
-          expanded: {},
-          ns: {
-            environments: ['sit', 'dev', 'tst', 'uat', 'prd']
-          },
-          repositories: [],
-          alerts: [],
-          deployments: [],
-        }
-      },
+import { ref, watch, onMounted } from 'vue'
+
+let setup = (props, ctx) => {
+
+  const ns = ref({
+    environments: ['sit', 'dev', 'tst', 'uat', 'prd']
+  });
+  const activity = ref({
+    alerts: [],
+    warnings: [],
+    deploying: [],
+  });
+  const loading = ref(true);
+  const repositories = ref([]);
+  const expanded = ref({});
+  const alerts = ref([]);
+  let deployments = ref([]);
+  
+  let showHeader = () => {
+    if (activity.value.alerts.length > 0 && activity.value.warnings.length > 0) return true;
+    if (activity.value.alerts.length > 0 && activity.value.deploying.length > 0) return true;
+    if (activity.value.warnings.length > 0 && activity.value.deploying.length > 0) return true;
+    return false;
+  }
+  
+  let toggleDetails = (value) => {
+    if (value in expanded.value){
+      expanded.value[value] = !expanded.value[value];
+    }else{
+      expanded.value[value] = true;
+    }
+  }
+  
+  return {
+    ns, activity, loading, repositories, expanded, alerts, deployments,
+    showHeader, toggleDetails
+  }
+}
+
+components["live"] = { template: "#live",
       methods: {
-        showHeader(){
-          if (this.activity.alerts.length > 0 && this.activity.warnings.length > 0) return true;
-          if (this.activity.alerts.length > 0 && this.activity.deploying.length > 0) return true;
-          if (this.activity.warnings.length > 0 && this.activity.deploying.length > 0) return true;
-          return false;
-        },
-        toggleDetails(value){
-          if (value in this.$data.expanded){
-            this.$data.expanded[value] = !this.$data.expanded[value];
-          }else{
-            this.$data.expanded[value] = true;
-          }
-        },
-        isVisible(value){
-          if (this.space && this.env){
-              return value.space === this.space && value.namespace === this.env
-          }
-          if (this.space){
-              return value.space === this.space
-          }
-          
-          return true;
-        },
-        getMaxSize(value){
-            switch (value.length){
-              case 2: return 'max-w-screen-md';
-              case 3: return 'max-w-screen-lg';
-              case 4: return 'max-w-screen-xl';
-             default: return 'max-w-screen-2xl';
-          }
-        },
-        hasEnvironment(environments, environment){
-          return environments.includes(environment)
-        },
-        getSkoonerLink(value){
-          let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
-          let link = 'https://skooner.' + env + '.' + value.aks_space + '.azure.dsb.dk/#!pod/' + value.namespace + '/' + value.pod
-          return link;
-        },
         updateModel(){
           let grouped = _.groupBy(this.deployments, x => x.metric.github_org + '/' + x.metric.github_repository)
                       
@@ -249,10 +231,11 @@
       },
       destroy() {
         clearInterval(this.timer)
-      }
+      },
+      setup
     };
     
-    routes.push({path:'/live', name:"live", component: components["live"]});
+routes.push({path:'/live', name:"live", component: components["live"]});
 </script>
 
 <style>
