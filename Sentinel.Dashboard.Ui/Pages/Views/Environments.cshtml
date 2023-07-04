@@ -12,7 +12,7 @@
                         <div class="bg-white rounded shadow-md mx-4 border border-solid border-gray-300">
                             <div aria-label="Spaace header">
                                 <div class="bg-gray-200 py-2 h-11 mx-[-1px] flex justify-between rounded-t border-x border-solid border-gray-300 items-center">
-                                    <div class="mx-4 font-bold text-gray-600 hover:underline">
+                                    <div class="mx-4 font-bold text-gray-600">
                                         Namespace: {{ s.root?.toUpperCase() }}
                                     </div>
                                     <div class="flex justify-between">
@@ -25,13 +25,13 @@
                                     <li v-for="e in s.environments">
                                         <template v-if="$route.name == 'app-environments'">
                                             <router-link :to="{ name: 'app-issues', params: { env: e, space: s.space }, query: $route.query }" 
-                                                         class="text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                         class="text-gray-700 hover:text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
                                                 {{ e }}
                                             </router-link>
                                         </template>
                                         <template v-else>
                                             <router-link :to="{ name: 'data-issues', params: { env: e, space: s.space }, query: $route.query }" 
-                                                         class="text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
+                                                         class="text-gray-700 hover:text-brand hover:bg-gray-100 font-bold no-underline text-4xl max-w-full block p-2">
                                                 {{ e }}
                                             </router-link>
                                         </template>
