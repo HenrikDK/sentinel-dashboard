@@ -1,5 +1,5 @@
 ﻿<template id="environment-select">
-  <div class="relative py-1" aria-label="Select Environment">
+  <div ref="el" class="relative py-1" aria-label="Select Environment">
     <button @@click="isOpen = !isOpen" type="button"
             class="h-9 w-64 items-center flex justify-end box-border cursor-pointer border border-gray-300 outline-0 rounded 
                 bg-gray-200 text-gray-500 leading-snug outline-none focus:text-gray-700 focus:bg-gray-100 focus:border-gray-500">
@@ -103,36 +103,35 @@
 </template>
 
 <script type="module">
-    components["environment-select"] = {
-      template: "#environment-select",
-      data() {
-        return {
-            noOptions: false,
-            isOpen: false,
-            selected: []
-        }
-      },
-      props: ['values', 'space', 'env'],
-      methods:{
-        selectEnvironment(event){
-          this.isOpen = false;
-          
-          var div = document.getElementById('environment-options');
-          div.scrollTop = 0;
-        },
-        clickHandler(event) {
-          const { target } = event;
-          const { $el } = this;
+import { ref, onMounted } from 'vue'
+  
+let setup = () => {
+  const noOptions = ref(false);
+  const isOpen = ref(false);
+  const selected = ref([]);
+  const el = ref(null);
+  
+  function selectEnvironment(event){
+    isOpen.value = false;
     
-          if (!$el.contains(target)) {
-             this.$data.isOpen = false;
-             return;
-          }
-          
-        },
-      },
-      async mounted() {
-        document.addEventListener('click', this.clickHandler);
-      },      
-    };
+    var div = document.getElementById('environment-options');
+    div.scrollTop = 0;
+  }
+
+  function clickHandler(event) {
+    const { target } = event;
+  
+    if (!el.value.contains(target)) {
+       isOpen.value = false;
+    }
+  }
+  
+  onMounted(async () =>{
+    document.addEventListener('click', clickHandler);
+  })
+  
+  return {noOptions, isOpen, selected, el, selectEnvironment, clickHandler, onMounted}
+}
+
+components["environment-select"] = { template: "#environment-select", props: ['values', 'space', 'env'], setup};
 </script>
