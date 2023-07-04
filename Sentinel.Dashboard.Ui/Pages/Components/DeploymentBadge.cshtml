@@ -39,33 +39,32 @@
   </div>
 </template>
 
-<script>
-    components["deployment-badge"] = {
-      template: "#deployment-badge",
-      data() {
-        return {}
-      },
-      props: ['deployment'],
-      methods: {
-        toDateString(value) {
-          const now = luxon.DateTime.local();
-          const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
-          const diff = past.diff(now, 'minutes');
-          if (Math.abs(diff.minutes) < 1){
-            return 'Just now!'
-          }
-          if (Math.abs(diff.minutes) < 5){
-            return past.toRelative({unit: 'minutes', locale: "en"});
-          }
+<script type="module">
 
-          return past.toFormat('y-LL-dd HH:mm')
-        },
-        isCurrent(value) {
-          const now = luxon.DateTime.local();
-          const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
-          const diff = past.diff(now, 'minutes');
-          return Math.abs(diff.minutes) < 5;
-        },
-      },
-    };
+let setup = () => {
+  function toDateString(value) {
+    const now = luxon.DateTime.local();
+    const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
+    const diff = past.diff(now, 'minutes');
+    if (Math.abs(diff.minutes) < 1){
+      return 'Just now!'
+    }
+    if (Math.abs(diff.minutes) < 5){
+      return past.toRelative({unit: 'minutes', locale: "en"});
+    }
+  
+    return past.toFormat('y-LL-dd HH:mm')
+  }
+  
+  function isCurrent(value) {
+    const now = luxon.DateTime.local();
+    const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
+    const diff = past.diff(now, 'minutes');
+    return Math.abs(diff.minutes) < 5;
+  }
+  
+  return { toDateString, isCurrent }
+}
+
+components["deployment-badge"] = { template: "#deployment-badge", props: ['deployment'], setup };
 </script>
