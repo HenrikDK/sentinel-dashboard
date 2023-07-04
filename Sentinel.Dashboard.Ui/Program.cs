@@ -11,7 +11,8 @@ builder.Host.UseLamar((context, registry) =>
         x.LookForRegistries();
     });
 
-//    registry.For<IHumioRepository>().Use<FakioRepository>();
+    //registry.For<IIssuesRepository>().Use<FakeIssueRepository>();
+    //registry.For<IPrometheusRepository>().Use<FakePrometheusRepository>();
 });
 
 builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
