@@ -125,7 +125,7 @@
 
 <script type="module">
 let setup = () => {
-  function getSkoonerLink(value) {
+  let getSkoonerLink = (value) => {
     let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
     let link = 'https://skooner.' + env + '.' + value.aks_space + '.azure.dsb.dk/#!pod/' + value.namespace + '/' + value.pod
     return link;

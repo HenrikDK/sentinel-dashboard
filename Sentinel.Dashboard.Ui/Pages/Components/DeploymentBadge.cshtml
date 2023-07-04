@@ -41,7 +41,7 @@
 
 <script type="module">
 let setup = () => {
-  function toDateString(value) {
+  let toDateString = (value) => {
     const now = luxon.DateTime.local();
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
     const diff = past.diff(now, 'minutes');
@@ -55,7 +55,7 @@ let setup = () => {
     return past.toFormat('y-LL-dd HH:mm')
   }
   
-  function isCurrent(value) {
+  let isCurrent = (value) => {
     const now = luxon.DateTime.local();
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
     const diff = past.diff(now, 'minutes');

@@ -23,7 +23,7 @@
 
 <script type="module">
 let setup = () => {
-  function toRelative(value) {
+  let toRelative = (value) => {
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
     return past.toRelativeCalendar({locale: "en"});
   }
