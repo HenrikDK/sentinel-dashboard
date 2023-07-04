@@ -111,14 +111,14 @@ let setup = () => {
   const selected = ref([]);
   const el = ref(null);
   
-  function selectEnvironment(event){
+  let selectEnvironment = (event) =>{
     isOpen.value = false;
     
     var div = document.getElementById('environment-options');
     div.scrollTop = 0;
   }
 
-  function clickHandler(event) {
+  let clickHandler = (event) => {
     const { target } = event;
   
     if (!el?.value?.contains(target)) {
