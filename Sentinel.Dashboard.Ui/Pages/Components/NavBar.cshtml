@@ -63,45 +63,50 @@
     </header>
 </template>
 
-<script>
-    components["nav-bar"] = {
-      template: "#nav-bar",
-      emits: ['search'],
-      methods: {
-        getNavLink(type){
-            if (type === 'app-issues'){
-              if (this.space && this.env && this.env.includes('-')){
-                return { name: 'app-issues', params: { env: this.env, space: this.space }, query: this.$route.query}
-              }
-              if (this.space && this.env && !this.env.includes('-')){
-                return { name: 'app-issues', params: { env: this.env + '-prd', space: this.space }, query: this.$route.query}
-              }
-              
-              return { name: 'app-environments', query: this.$route.query}              
-            }
-            if (type === 'data-issues'){
-              if (this.space && this.env && this.env.includes('-')){
-                return { name: 'data-issues', params: { env: this.env, space: this.space }, query: this.$route.query}
-              }
-              if (this.space && this.env && !this.env.includes('-')){
-                return { name: 'data-issues', params: { env: this.env + '-prd', space: this.space }, query: this.$route.query}
-              }
-              
-              return { name: 'data-environments', query: this.$route.query}              
-            }            
-            if (type === 'deployments'){
-              if (this.space && this.env && !this.$route.name?.includes('deployments')){
-                return { name: 'deployments-namespace', params: { env: this.env.split('-')[0], space: this.space }, query: this.$route.query }
-              }
-              if (this.space && !this.$route.name?.includes('deployments')){
-                return { name: 'deployments-space', params: {space: this.space}, query: this.$route.query }
-              }
-              return { name: 'deployments', query: this.$route.query }
-            }
-            
-            return { name: 'deployments', query: this.$route.query }                      
-        }
-      },
-      props: ['environments', 'space', 'env']
-    };
+<script type="module">
+import { useRoute } from 'vue-router'
+
+let setup = (props) =>{
+  const route = useRoute()
+  
+  function getNavLink(type){
+    if (type === 'app-issues'){
+      if (props.space && props.env && props.env.includes('-')){
+        return { name: 'app-issues', params: { env: props.env, space: props.space }, query: route.query}
+      }
+      if (props.space && props.env && !props.env.includes('-')){
+        return { name: 'app-issues', params: { env: props.env + '-prd', space: props.space }, query: route.query}
+      }
+      
+      return { name: 'app-environments', query: route.query}
+    }
+    
+    if (type === 'data-issues'){
+      if (props.space && props.env && props.env.includes('-')){
+        return { name: 'data-issues', params: { env: props.env, space: props.space }, query: route.query}
+      }
+      if (props.space && props.env && !props.env.includes('-')){
+        return { name: 'data-issues', params: { env: props.env + '-prd', space: props.space }, query: route.query}
+      }
+      
+      return { name: 'data-environments', query: route.query}              
+    }
+    
+    if (type === 'deployments'){
+      if (props.space && props.env && !route.name?.includes('deployments')){
+        return { name: 'deployments-namespace', params: { env: props.env.split('-')[0], space: props.space }, query: route.query }
+      }
+      if (props.space && !route.name?.includes('deployments')){
+        return { name: 'deployments-space', params: {space: props.space}, query: route.query }
+      }
+      return { name: 'deployments', query: route.query }
+    }
+    
+    return { name: 'deployments', query: route.query }                      
+  }
+  
+  return { getNavLink }
+}
+
+components["nav-bar"] = {template: "#nav-bar", emits: ['search'], props: ['environments', 'space', 'env'], setup};
 </script>
