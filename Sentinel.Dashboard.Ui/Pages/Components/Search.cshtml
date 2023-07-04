@@ -36,49 +36,49 @@
 </template>
 
 <script type="module">
-components["search"] = { template: "#search",
-    data() {
-      return {
-        hasFocus: false,
-        query: '',
-      }
-    },
-    mounted() {
-      window.document.addEventListener('keydown', this.onDocumentKeydown);
-    },
-    watch: {
-      query(){
-         this.$emit('update:search', this.$data.query)
-      },
-    },
-    methods: {
-      search(){
-        this.$emit('update:search', this.$data.query)
-      },
-      clear(){
-        this.$data.query = ''
-      },
-      onKeydown(e){
-        if (e.key === 'Escape') {
-          this.$data.query = ''
-        }
-      },
-      onDocumentKeydown(e){
-        var control = document.getElementById("search-input")
-        if (e.key === '/' && e.target !== control.value &&
-          window.document.activeElement !== control.value &&
-          e.target instanceof HTMLInputElement === false &&
-          e.target instanceof HTMLSelectElement === false &&
-          e.target instanceof HTMLTextAreaElement === false)
-        {
-          e.preventDefault()
-           
-          control?.focus()
-          control?.select()
-        }
-      }
-    },
-    emits: ['update:search'],
-  };
+import { ref, watch, onMounted } from 'vue'
 
+let setup = (props, ctx) => {
+  const hasFocus = ref(false)
+  const query = ref('')
+  
+  let search = () =>{
+    ctx.emit('update:search', query.value)
+  }
+  
+  let clear = () =>{
+    query.value = ''
+  }
+  
+  let onKeydown = (e) =>{
+    if (e.key === 'Escape') {
+      query.value = ''
+    }
+  }
+
+  let onDocumentKeydown = (e) =>{
+    var control = document.getElementById("search-input")
+    if (e.key === '/' && e.target !== control.value &&
+      window.document.activeElement !== control.value &&
+      e.target instanceof HTMLInputElement === false)
+    {
+      e.preventDefault()
+       
+      control?.focus()
+      control?.select()
+    }
+  }
+      
+  watch(query, () => {
+    ctx.emit('update:search', query.value)
+  })
+  
+  onMounted(async () =>{
+    window.document.addEventListener('keydown', onDocumentKeydown);
+  })
+  
+  return {hasFocus, query, search, clear, onKeydown, onDocumentKeydown}
+}
+
+components["search"] = { template: "#search", emits: ['update:search'], setup };
 </script>
