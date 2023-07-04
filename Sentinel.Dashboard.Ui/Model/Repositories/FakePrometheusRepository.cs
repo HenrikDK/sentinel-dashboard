@@ -66,9 +66,9 @@ public class FakePrometheusRepository : IPrometheusRepository
                 new { rep = "container-registry-cleanup", name = "container-registry-cleanup", type ="worker" },
                 new { rep = "school-travel", name = "school-travel", type ="ui" },
 
-                new{ rep = "github-sync", name = "github-sync", type ="worker" }, 
-                new { rep = "container-registry-cleanup", name = "container-registry-cleanup", type ="worker" },
-                new { rep = "school-travel", name = "school-travel", type ="ui" },
+                new{ rep = "departure-board", name = "departure-board", type ="ui" }, 
+                new { rep = "chaos-monkey", name = "chaos-monkey", type ="worker" },
+                new { rep = "dev-sec-ops", name = "dev-sec-ops", type ="worker" },
             };
             
             envs.ForEach(e => names.ForEach(n =>
@@ -168,7 +168,7 @@ public class FakePrometheusRepository : IPrometheusRepository
         var set = new JArray();
         result["data"]["result"] = set;
 
-        var ns = new[] { "lobster", "planning", "demo" };
+        var ns = new[] { "project", "planning", "demo" };
         var envs = new[] { "sit", "prd", "dev", "uat", "tst" };
         
             ns.ForEach(n => envs.ForEach(e =>
@@ -201,6 +201,60 @@ public class FakePrometheusRepository : IPrometheusRepository
 
     public string GetAlerts()
     {
-        return "";
+        var result = new JObject();
+        result["status"] = "success";
+        result["data"] = new JObject();
+        result["data"]["resultType"] = "vector";
+        var set = new JArray();
+        result["data"]["result"] = set;
+        
+        var alarms = new []{ 
+            new { rep = "legacy-exporter", name = "p90-exporter", type ="worker", space = "demo", env = "prd", alarm ="P90 has exploded!"},
+            new { rep = "graffiti", name = "graffiti", type ="api", space="planning", env = "prd", alarm= "Instance Down!"},
+            new { rep = "departure-board", name = "departure-board", type ="ui", space="demo", env="prd", alarm="IGP is hot garbage!"},
+            new { rep = "dev-sec-ops", name = "dev-sec-ops", type ="worker", space="demo", env="tst", alarm="Passwords stored in clear text!" },
+        };
+
+        alarms.ForEach(x =>
+        {
+            var alert = GetAlert(x.space, x.env, x.rep, x.name, x.type, x.alarm);
+            set.Add(alert);
+        });
+        
+        return result.ToString();
+    }
+    
+    private JObject GetAlert(string ns, string env, string repo, string name, string type, string alert)
+    {
+        var deployed = DateTimeOffset.Now.AddDays(-Random.Shared.Next(1, 7)).ToUnixTimeSeconds();
+        var tmp = $$"""
+{
+    "metric": {
+      "__name__": "up",
+      "aks_deployed": "{{deployed}}",
+      "aks_environment": "{{env}}",
+      "aks_name": "{{name}}-{{type}}",
+      "aks_space": "{{ns}}",
+      "aks_systemid": "no",
+      "aks_type": "{{type}}",
+      "aks_version": "{{DateTime.Now.AddDays(-Random.Shared.Next(1, 7)):yyyyMMdd}}-{{Random.Shared.Next(1,99)}}-{{RandomString(7)}}",
+      "alertname": "{{alert}}",
+      "app": "{{name}}-{{type}}-{{env}}",
+      "github_branch": "main",
+      "github_org": "my-org",
+      "github_repository": "{{repo}}",
+      "github_user": "HenrikDK",
+      "namespace": "{{ns}}-{{env}}",
+      "pod": "{{name}}-{{type}}-{{RandomString(7)}}-{{RandomString(5)}}",
+    },
+    "value": [
+      {{DateTimeOffset.Now.ToUnixTimeSeconds()}},
+      "1"
+    ]
+}
+""";
+        
+        var item = JObject.Parse(tmp);
+        return item;
     }
 }
