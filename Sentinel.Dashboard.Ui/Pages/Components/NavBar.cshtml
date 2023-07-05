@@ -28,12 +28,13 @@
               <span class="py-1 text-xl font-semibold align-middle">@ViewData["Title"]</span>
             </router-link>
             
-            <router-link :to="getNavLink('app-issues')" :data-active="$route.name?.includes('app-issue')"
+            <router-link :to="getNavLink('app')" 
+                         :data-active="$route.params.type == 'app'"
                          class="py-2 px-4 text-slate-600 data-[active=true]:bg-gray-200/[0.7] hover:bg-gray-200/[0.7] hover:text-brand text-xl font-semibold align-middle">
               App-Issues
             </router-link>
-            <router-link :to="getNavLink('data-issues')"
-                         :data-active="$route.name?.includes('data-issue')"
+            <router-link :to="getNavLink('data')"
+                         :data-active="$route.params.type == 'data'"
                          class="py-2 px-4 text-slate-600 data-[active=true]:bg-gray-200/[0.7] hover:bg-gray-200/[0.7] hover:text-brand text-xl font-semibold align-middle">
               Data-Issues
             </router-link>
@@ -70,23 +71,23 @@ let setup = (props) =>{
   const route = useRoute()
   
   function getNavLink(type){
-    if (type === 'app-issues'){
+    if (type === 'app'){
       if (props.space && props.env && props.env.includes('-')){
-        return { name: 'app-issues', params: { env: props.env, space: props.space }, query: route.query}
+        return { name: 'issues', params: { env: props.env, space: props.space, type: type }, query: route.query}
       }
       if (props.space && props.env && !props.env.includes('-')){
-        return { name: 'app-issues', params: { env: props.env + '-prd', space: props.space }, query: route.query}
+        return { name: 'issues', params: { env: props.env + '-prd', space: props.space, type: type }, query: route.query}
       }
       
       return { name: 'app-environments', query: route.query}
     }
     
-    if (type === 'data-issues'){
+    if (type === 'data'){
       if (props.space && props.env && props.env.includes('-')){
-        return { name: 'data-issues', params: { env: props.env, space: props.space }, query: route.query}
+        return { name: 'issues', params: { env: props.env, space: props.space, type: type }, query: route.query}
       }
       if (props.space && props.env && !props.env.includes('-')){
-        return { name: 'data-issues', params: { env: props.env + '-prd', space: props.space }, query: route.query}
+        return { name: 'issues', params: { env: props.env + '-prd', space: props.space, type: type }, query: route.query}
       }
       
       return { name: 'data-environments', query: route.query}              
