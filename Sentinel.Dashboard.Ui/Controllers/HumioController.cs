@@ -16,32 +16,38 @@ public class HumioController : ControllerBase
         _humioQueryRepository = humioQueryRepository;
     }
 
-    [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}")]
-    public ActionResult GetOverviewQuery(string space, string environment, string type, [FromQuery] string timeSpan = "24hours")
+    [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}/issues")]
+    public ActionResult GetOverviewIssuesQuery(string space, string environment, string type, [FromQuery] string timeSpan = "24hours")
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
         var start = timeSpan.Replace("hours", "h").Replace("days", "d");
 
         var repository = _humioQueryRepository.GetRepository(space);
-        var query = "";
         
-        if (type is "app-issues" or "data-issues")
-        {
-            query = _humioQueryRepository.GetIssuesListQuery(environment, eventType);
-        }
-
-        if (type is "app-chart" or "data-chart")
-        {
-            query = _humioQueryRepository.GetOverviewChartQuery(environment, timeSpan, eventType);
-        }
+        var query = _humioQueryRepository.GetIssuesListQuery(environment, eventType);
         
         var url = $"https://cloud.humio.com/{repository}/search?query={HttpUtility.UrlEncode(query)}&start={start}&tz=Europe%2FCopenhagen";
         
         return Redirect(url);
     }
     
-    [HttpGet("humio/spaces/{space}/environments/{environment}/issues/{issueId}/queries/{type}")]
-    public ActionResult GetIssueQuery(string space, string environment, string type, string issueId, [FromQuery] string timeSpan = "24hours")
+    [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}/issues/chart")]
+    public ActionResult GetOverviewChartQuery(string space, string environment, string type, [FromQuery] string timeSpan = "24hours")
+    {
+        var eventType = type.StartsWith("app") ? "Error" : "Warning";
+        var start = timeSpan.Replace("hours", "h").Replace("days", "d");
+
+        var repository = _humioQueryRepository.GetRepository(space);
+        
+        var query = _humioQueryRepository.GetOverviewChartQuery(environment, timeSpan, eventType);
+        
+        var url = $"https://cloud.humio.com/{repository}/search?query={HttpUtility.UrlEncode(query)}&start={start}&tz=Europe%2FCopenhagen";
+        
+        return Redirect(url);
+    }    
+    
+    [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}/issues/{issueId}/events")]
+    public ActionResult GetIssueEventsQuery(string space, string environment, string type, string issueId, [FromQuery] string timeSpan = "24hours")
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
         var start = timeSpan.Replace("hours", "h").Replace("days", "d");
@@ -55,17 +61,31 @@ public class HumioController : ControllerBase
         }
         
         var repository = _humioQueryRepository.GetRepository(space);
-        var query = "";
+        
+        var query = _humioQueryRepository.GetEventsQuery(environment, issue, eventType);
+        
+        var url = $"https://cloud.humio.com/{repository}/search?query={HttpUtility.UrlEncode(query)}&start={start}&tz=Europe%2FCopenhagen";
+        
+        return Redirect(url);
+    }
+    
+    [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}/issues/{issueId}/chart")]
+    public ActionResult GetIssueChartQuery(string space, string environment, string type, string issueId, [FromQuery] string timeSpan = "24hours")
+    {
+        var eventType = type.StartsWith("app") ? "Error" : "Warning";
+        var start = timeSpan.Replace("hours", "h").Replace("days", "d");
 
-        if (type is "app-events" or "data-events")
+        var issues = _issuesRepository.GetIssues(space, environment, eventType);
+        
+        var issue = issues.FirstOrDefault(x => x.Id == issueId);
+        if (issue == null)
         {
-            query = _humioQueryRepository.GetEventsQuery(environment, issue, eventType);
+            return NotFound();
         }
-
-        if (type is "app-minichart" or "data-minichart")
-        {
-            query = _humioQueryRepository.GetMiniChartQuery(environment, timeSpan, issue, eventType);
-        }
+        
+        var repository = _humioQueryRepository.GetRepository(space);
+        
+        var query = _humioQueryRepository.GetMiniChartQuery(environment, timeSpan, issue, eventType);
         
         var url = $"https://cloud.humio.com/{repository}/search?query={HttpUtility.UrlEncode(query)}&start={start}&tz=Europe%2FCopenhagen";
         
