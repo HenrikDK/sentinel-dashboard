@@ -8,16 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
+    <PackageReference Include="Azure.Identity" Version="1.9.0" />
     <PackageReference Include="Flurl" Version="3.0.7" />
     <PackageReference Include="Flurl.Http" Version="3.2.4" />
-    <PackageReference Include="Lamar" Version="10.0.1" />
-    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="10.0.1" />
-    <PackageReference Include="morelinq" Version="3.3.2" />
-    <PackageReference Include="prometheus-net" Version="7.0.0" />
-    <PackageReference Include="prometheus-net.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Lamar" Version="12.0.0" />
+    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="morelinq" Version="3.4.2" />
+    <PackageReference Include="prometheus-net" Version="8.0.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
   </ItemGroup>
 
@@ -30,6 +32,12 @@
     </Content>
     <Content Update="wwwroot\favicon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\favicon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\mask-icon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

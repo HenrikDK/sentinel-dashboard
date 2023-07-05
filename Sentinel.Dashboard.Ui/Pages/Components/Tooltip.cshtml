@@ -1,0 +1,73 @@
+<template id="tooltip">
+  <div class="inline-block">
+    <div ref="mainRef" class="inline-block" :class="padding" @@mouseenter="show" @@mouseleave="hide">
+      <slot name="cell"/>
+    </div>
+    <div ref="floatingRef" role="tooltip" class="absolute items-center z-50 rounded shadow-lg p-2 text-black bg-gray-100"
+         :class="[visible ? 'visible opacity-100' : 'invisible']">
+      <div class="inline-block">
+        <slot name="tooltip"/>
+      </div>
+      
+      <div ref="arrowRef" class="absolute bg-gray-100 h-2 w-2 rotate-45 z-20"></div>
+    </div>
+  </div>
+</template>
+
+<script type="module">
+import { computePosition, offset, flip, shift, arrow } from "@@floating-ui/dom";
+import { ref } from 'vue';
+
+let setup = (props, ctx) =>{
+  const visible = ref(false);
+  const mainRef = ref(null);
+  const floatingRef = ref(null);
+  const arrowRef = ref(null)
+  
+  let show = async (e) => {
+    computePosition(mainRef.value, floatingRef.value, {
+      placement: props.placement,
+      middleware: [offset(8), flip(), shift({ padding:5 }), arrow({ element: arrowRef.value })]
+    }).then(({ x, y, middlewareData, placement }) => {
+     
+      Object.assign(floatingRef.value.style, { top: `${y}px`, left: `${x}px`});
+                
+      const opposingSide = {
+        right:"left",
+        left: "right",
+        top: "bottom",
+        bottom: "top"
+      }[placement.split('-')[0]];
+     
+      const { x: arrowX, y: arrowY } = middlewareData.arrow;
+  
+      Object.assign(arrowRef.value.style, {
+        left: arrowX ? `${arrowX}px`: "",
+        top: arrowY? `${arrowY}px` : "",
+        bottom: "",
+        right: "",
+        [opposingSide]: '-4px'
+      });
+    });
+   
+    visible.value = true;
+  }
+  
+  let hide = async (e) => {
+    visible.value = false;
+  }
+  
+  return {visible, mainRef, floatingRef, arrowRef, show, hide}
+}
+
+components["tooltip"] = { template: "#tooltip",
+    props: {
+      padding: String,
+      placement: {
+        type: String,
+        default: 'bottom'
+      }
+    },
+    setup
+};
+</script>

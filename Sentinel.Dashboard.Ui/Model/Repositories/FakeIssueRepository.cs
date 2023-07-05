@@ -2,9 +2,9 @@ using System.Text.Json;
 
 namespace Sentinel.Dashboard.Ui.Model.Repositories;
 
-public class FakioRepository : IHumioRepository
+public class FakeIssueRepository : IIssuesRepository
 {
-    public IList<Issue> GetOverview(string environment)
+    public IList<Issue> GetIssues(string space, string environment, string eventType)
     {
         return new List<Issue>
         {
@@ -68,7 +68,7 @@ public class FakioRepository : IHumioRepository
         };
     }
     
-    public IList<TimeSeriesElement> GetActivity(string environment, string timeSpan)
+    public IList<TimeSeriesElement> GetIssuesActivity(string space, string environment, string timeSpan, string eventType)
     {
         var result = new List<TimeSeriesElement>();
         var tmp = GetActivityFromServer("misc-ui", new [] {0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40,0,0,0,0,0,0,0,0,0,0,0,0,0,0});
@@ -93,7 +93,7 @@ public class FakioRepository : IHumioRepository
         }).ToList();
     }
     
-    public IList<TimeSeriesElement> GetIssueActivity(string environment, string timeSpan, Issue issue)
+    public IList<TimeSeriesElement> GetIssueActivity(string space, string environment, string timeSpan, Issue issue, string eventType)
     {   
         var rnd = new Random();
         var slots = timeSpan.EndsWith("hours") ? 24 : 30;
@@ -108,12 +108,7 @@ public class FakioRepository : IHumioRepository
         }).ToList();
     }
     
-    public IList<string> GetEnvironments()
-    {
-        return new List<string> {"app", "app-dev", "app-tst", "app-uat"};
-    }
-    
-    public IList<Error> GetErrorIndex(string environment, Issue issue)
+    public IList<Error> GetIssueEvents(string space, string environment, Issue issue, string eventType)
     {
         var tmp = """
 {"Timestamp":"2022-11-26T16:46:38.8513590+01:00",

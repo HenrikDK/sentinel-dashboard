@@ -44,17 +44,9 @@ function overviewChartFormatter(params) {
 
 function buildOverviewChart(category, data){
     options = {
-        title: {
-            text: "Errors over the last 24 hours",
-            textStyle: {
-                fontWeight: "normal",
-                fontSize: 16,
-                color: "grey"
-            },
-            padding: [5, 0, 0, 40]
-        },
         tooltip: {
             trigger: 'axis',
+            confine: true,
             axisPointer: {
                 type: 'shadow'
             },
@@ -70,7 +62,7 @@ function buildOverviewChart(category, data){
             left: 10,
             containLabel: true,
             bottom: 0,
-            top: 30,
+            top: 20,
             right: 10
         },
         yAxis: {
@@ -145,13 +137,6 @@ function buildOverviewMiniChart(category, data){
     };
     
     return options;
-}
-
-async function loadMiniChart(environment, issueId){
-    let options = await fetch("./?handler=issueActivity&issueId=" + issueId + "&environment=" + environment)
-        .then(r => r.json())
-        .then(json => buildOverviewMiniChart(json.categories, json.series));
-    return {options, issueId}
 }
 
 function formatBytes(bytes, decimals = 2) {
