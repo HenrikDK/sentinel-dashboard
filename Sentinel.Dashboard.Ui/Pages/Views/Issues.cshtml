@@ -217,7 +217,7 @@ let setup = (props, ctx) => {
     .catch(e => {console.error(e);});
   }
   
-  watch(async () => '$route', async () => {
+  watch(route, async () => {
     resetView();
     await initView();
   });
