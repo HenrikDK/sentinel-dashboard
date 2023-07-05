@@ -1,7 +1,7 @@
 ﻿<template id="deployments">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start relative">
     
-    <template v-if="!$route.params.env && !$route.params.space && !this.search && spaces.length > 0">
+    <template v-if="!$route.params.env && !$route.params.space && !search && spaces.length > 0">
       <div class="mt-4 mb-2">Filters: </div>
       <div class="w-full flex flex-wrap mb-4">
         <router-link :to="{ name: 'live', query: $route.query }">
@@ -84,8 +84,10 @@
 
 <script type="module">
 import { ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 let setup = (props, ctx) => {
+  const route = useRoute()
   const timer = ref('')
   const spaces = ref([]);
   const expanded = ref({});
@@ -106,11 +108,11 @@ let setup = (props, ctx) => {
   }
 
   let isVisible = (value) => {
-    if (props.space && props.env){
-        return value.space === props.space && value.namespace === props.env
+    if (route.params.space && route.params.env){
+        return value.space === route.params.space && value.namespace === route.params.env
     }
-    if (props.space){
-        return value.space === props.space
+    if (route.params.space){
+        return value.space === route.params.space
     }
     return true;
   }
@@ -269,7 +271,7 @@ let destroy = () => {
   clearInterval(timer.value)
 }
 
-components["deployments"] = { template: "#deployments", props: ['env', 'space', 'search'], setup, destroy};
+components["deployments"] = { template: "#deployments", props: ['search'], setup, destroy};
 
 routes.push({path:'/spaces/:space/environments/:env/deployments', name:"deployments-namespace", component: components["deployments"]});
 routes.push({path:'/spaces/:space/deployments', name:"deployments-space", component: components["deployments"]});
