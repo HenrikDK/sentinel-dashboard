@@ -71,23 +71,26 @@ let setup = (props) =>{
   const route = useRoute()
   
   function getNavLink(type){
+    let space = route.params.space;
+    let env = route.params.env;
+    
     if (type !== 'deployments' ){
-      if (props.space && props.env && props.env.includes('-')){
-        return { name: 'issues', params: { env: props.env, space: props.space, type: type }, query: route.query}
+      if (space && env && env.includes('-')){
+        return { name: 'issues', params: { env: env, space: space, type: type }, query: route.query}
       }
-      if (props.space && props.env && !props.env.includes('-')){
-        return { name: 'issues', params: { env: props.env + '-prd', space: props.space, type: type }, query: route.query}
+      if (space && env && !env.includes('-')){
+        return { name: 'issues', params: { env: env + '-prd', space: space, type: type }, query: route.query}
       }
       
       return { name: 'environments', params: { type: type }, query: route.query}
     }
     
     if (type === 'deployments'){
-      if (props.space && props.env && !route.name?.includes('deployments')){
-        return { name: 'deployments-namespace', params: { env: props.env.split('-')[0], space: props.space }, query: route.query }
+      if (space && env && !route.name?.includes('deployments')){
+        return { name: 'deployments-namespace', params: { env: env.split('-')[0], space: space }, query: route.query }
       }
-      if (props.space && !route.name?.includes('deployments')){
-        return { name: 'deployments-space', params: {space: props.space}, query: route.query }
+      if (space && !route.name?.includes('deployments')){
+        return { name: 'deployments-space', params: {space: space}, query: route.query }
       }
       return { name: 'deployments', query: route.query }
     }
