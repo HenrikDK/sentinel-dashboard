@@ -69,88 +69,101 @@
 @RenderSection("Scripts", required: false)
 
 <script type="module">
-  import { createApp } from 'vue'
-  import { createRouter, createWebHashHistory } from 'vue-router'
-  import { default as ECharts } from 'vue-echarts'
-    
-  const router = createRouter({
-    history: createWebHashHistory(),
-    routes
-  })
+import { createApp, ref, watch, onMounted } from 'vue'
+import { createRouter, createWebHashHistory, useRoute } from 'vue-router'
+import { default as ECharts } from 'vue-echarts'
 
-  const app = createApp({
-    data() {
-     return {
-       search: '',
-       space: undefined,
-       env: undefined,
-       envVisible: false,
-       spaces: [],
-       environments: []
-     }
-    },
-    methods: {
-      loadEnvironments() {
-        fetch("/api/environments")
-          .then(r => r.json())
-          .then(j => {
-            if (j.status === "success"){
-              this.environments = j.data.result
-            }
-          });
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes
+})
+
+let setup = () => {
+  const route = useRoute()
+  const env = ref(undefined);
+  const space = ref(undefined);
+  const issue = ref(undefined);  
+  const search = ref('');
+  const timer = ref('');
+  const spaces = ref([]);
+  const environments = ref([]);
+  
+  let loadEnvironments = () => {
+    fetch("/api/environments")
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === "success"){
+          environments.value = j.data.result
         }
-    },
-    watch: {
-      environments(value) {
-        let grouped = _.groupBy(value, x => x.metric.aks_space);
-        let types = ['prd','uat','tst','dev', 'sit'];
-        let spaces = [];
-        Object.keys(grouped).sort().forEach(g => {
-          let metrics = grouped[g];
-          let roots = metrics.map(x => x.metric.namespace.split('-')[0]);
-          roots = Array.from(new Set(roots)).sort();
-          roots.forEach(r => {
-            let namespace = {
-              'space': g,
-              'root': r,
-              'environments': []
-            }
-            
-            types.forEach(x => {
-              let matches = metrics.filter(m => m.metric.namespace === r + "-" + x)
-              if (matches.length > 0){
-                namespace.environments.push(matches[0].metric.namespace);
-              }
-            });
-            
-            spaces.push(namespace)
-          });
-          
+      });
+  }
+  
+  let updateSpaces = () => {
+    let grouped = _.groupBy(environments.value, x => x.metric.aks_space);
+    let types = ['prd','uat','tst','dev', 'sit'];
+    let gSpaces = [];
+    Object.keys(grouped).sort().forEach(g => {
+      let metrics = grouped[g];
+      let roots = metrics.map(x => x.metric.namespace.split('-')[0]);
+      roots = Array.from(new Set(roots)).sort();
+      roots.forEach(r => {
+        let namespace = {
+          'space': g,
+          'root': r,
+          'environments': []
+        }
+        
+        types.forEach(x => {
+          let matches = metrics.filter(m => m.metric.namespace === r + "-" + x)
+          if (matches.length > 0){
+            namespace.environments.push(matches[0].metric.namespace);
+          }
         });
         
-        this.spaces = spaces;
-      }
-    },
-    async mounted () {      
-      this.$watch(()=> this.$route.path, (to, from)=> {
-        this.space = this.$route.params.space
-        this.env = this.$route.params.env        
-      })
+        gSpaces.push(namespace)
+      });
       
-      this.loadEnvironments();
-      
-      this.timer = setInterval(this.loadEnvironments, 30000);
-    },
-    destroy() {
-      clearInterval(this.timer)
-    },
-  })
-  .component('v-chart', ECharts)
-  Object.entries(components).forEach(([k,v]) =>{
-    app.component(k, v)
+    });
+    
+    spaces.value = gSpaces;
+  }
+
+  watch(environments, () => {
+    updateSpaces();
   });
-  app.use(router)
-  app.mount('#app');
+  
+  watch(()=> route.path, () => {
+    space.value = route.params.space;
+    env.value = route.params.env;
+    issue.value = route.params.issue;
+  })
+  
+  onMounted(async () => {
+    loadEnvironments();
+    
+    timer.value = setInterval(loadEnvironments, 30000);
+  });
+  
+  return {
+    env, space, issue, search, spaces, environments,
+    loadEnvironments, updateSpaces
+  }
+}
+
+let destroy = () => {
+  clearInterval(this.timer)
+}
+
+const app = createApp({setup, destroy});
+
+app.component('v-chart', ECharts)
+
+Object.entries(components).forEach(([k,v]) =>{
+  app.component(k, v)
+});
+
+app.use(router)
+app.mount('#app');
 </script>
 </body>
 </html>
