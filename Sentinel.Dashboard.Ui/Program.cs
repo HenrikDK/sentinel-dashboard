@@ -11,8 +11,8 @@ builder.Host.UseLamar((context, registry) =>
         x.LookForRegistries();
     });
 
-    //registry.For<IIssuesRepository>().Use<FakeIssueRepository>();
-    //registry.For<IPrometheusRepository>().Use<FakePrometheusRepository>();
+    registry.For<IIssuesRepository>().Use<FakeIssueRepository>();
+    registry.For<IPrometheusRepository>().Use<FakePrometheusRepository>();
 });
 
 builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
@@ -24,13 +24,18 @@ builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
             options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
         });
     })
+    .ConfigureAppConfiguration((_, config) =>
+    {
+        var builtConfig = config.Build();
+        var secretClient = new SecretClient(new Uri(builtConfig["KeyVault"]), new DefaultAzureCredential());
+        config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+    })
     .ConfigureLogging((context, config) =>
     {
         var logger = new LoggerConfiguration()
             .MinimumLevel.Warning()
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
-            //.WriteTo.Console()
             .WriteTo.Console(new JsonFormatter(renderMessage:true))
             .CreateLogger();
 
