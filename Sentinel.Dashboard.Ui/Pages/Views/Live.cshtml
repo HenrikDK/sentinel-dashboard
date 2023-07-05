@@ -1,4 +1,4 @@
-﻿<template id="live">
+<template id="live">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start">
 
     <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid max-w-screen-2xl border-gray-300 w-full"
@@ -69,7 +69,6 @@
 import { ref, watch, onMounted } from 'vue'
 
 let setup = (props, ctx) => {
-
   const ns = ref({
     environments: ['sit', 'dev', 'tst', 'uat', 'prd']
   });
@@ -83,7 +82,7 @@ let setup = (props, ctx) => {
   const repositories = ref([]);
   const expanded = ref({});
   const alerts = ref([]);
-  let deployments = ref([]);
+  const deployments = ref([]);
   
   let showHeader = () => {
     if (activity.value.alerts.length > 0 && activity.value.warnings.length > 0) return true;
