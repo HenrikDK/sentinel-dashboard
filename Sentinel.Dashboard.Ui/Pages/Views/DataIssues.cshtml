@@ -18,9 +18,12 @@
     
     <div class="flex flex-wrap text-sm w-full min-h-[60px] max-w-screen-xl mx-auto py-2" aria-label="Service filter list">
       <template v-for="s in services">
-        <button class="bg-transparent font-semibold p-2 border border-solid rounded-xl shadow-md text-black mx-2 my-1
-              hover:text-white aria-selected:text-white" 
-                :class="['border-[' + s.color + ']', 'hover:bg-[' + s.color + ']', 'aria-selected:bg-[' + s.color + ']' ]"
+        <button class="font-semibold p-2 mx-2 my-1
+              border border-solid rounded-md shadow-sm
+              text-gray-600 border-gray-300"
+                :class="['hover:border-[' + s.color + ']', 'aria-selected:border-[' + s.color + ']', 
+                        'hover:text-black', 'aria-selected:text-black',
+                        'hover:bg-[' + s.color + ']/[0.3]', 'aria-selected:bg-[' + s.color + ']/[0.3]']"
                 @@click="selectService(s.name, false)" @@dblclick="selectService(s.name, true)" :aria-selected="filter.includes(s.name)">
           {{ s.name }}
         </button>
@@ -151,7 +154,7 @@
         },
         populateServices(){
           if (this.services && this.services.length > 0 ) return;
-          let chart = this.overview.chart;
+          let chart = this.$refs.overview.chart;
           let series = chart.getModel().getSeries();
           let services = series
                     .map(s => { return { name: s.name, color: chart.getVisual({seriesIndex: s.seriesIndex }, 'color')}})
