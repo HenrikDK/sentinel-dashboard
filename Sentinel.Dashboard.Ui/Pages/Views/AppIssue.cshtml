@@ -353,18 +353,18 @@ let setup = (props, ctx) => {
     let space = route.params.space;
     let type = route.params.type
 
-    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}?timeSpan=24hours`)
+    fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issueId}?timeSpan=24hours`)
       .then(r => r.json())
       .then(j => {
         charts.value.day = buildDetailMiniChart(j);
         issue.value = j.issue;
       });
     
-    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}?timeSpan=30days`)
+    fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issueId}?timeSpan=30days`)
       .then(r => r.json())
       .then(j => charts.value.month = buildDetailMiniChart(j));
     
-    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}/events`)
+    fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issueId}/events`)
     .then(r => r.json())
     .then(j => {
       index.value = j;
