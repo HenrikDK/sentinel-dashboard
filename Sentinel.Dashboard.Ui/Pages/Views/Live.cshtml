@@ -1,4 +1,4 @@
-<template id="live">
+﻿<template id="live">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start">
 
     <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid max-w-screen-2xl border-gray-300 w-full"
@@ -218,7 +218,7 @@ let setup = (props, ctx) => {
   onMounted(async () => {
     fetchData();
     
-    timer.value = setInterval(fetchData, 10000);
+    timer.value = setInterval(fetchData, 15000);
   })
     
   return {
