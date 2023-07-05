@@ -1,4 +1,4 @@
-﻿<template id="data-issues">
+<template id="data-issues">
   <div class="mt-2">
     <div v-if="issues.length > 0" class="w-full max-w-screen-xl mx-auto">
       <div class="w-full flex justify-between translate-y-2">
@@ -6,7 +6,7 @@
         <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/data-chart`" target="_blank">Query</a>
       </div>
       <div class="flex">
-        <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@finished="populateServices" style="width: 1280px; height: 180px;"/>
+        <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@rendered="populateServices" style="width: 1280px; height: 180px;"/>
       </div>
     </div>
     <div v-else class="flex justify-center">

@@ -6,7 +6,7 @@
         <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/app-chart`" target="_blank">Query</a>
       </div>
       <div class="flex">
-        <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@finished="populateServices" style="width: 1280px; height: 180px;"/>
+        <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@rendered="populateServices" style="width: 1280px; height: 180px;"/>
       </div>
     </div>
     <div v-else class="flex justify-center">
@@ -162,15 +162,15 @@
                     .map(s => { return { name: s.name, color: chart.getVisual({seriesIndex: s.seriesIndex }, 'color')}})
                     .sort(x => x.name);
           
-          this.$data.services = services;
+          this.services = services;
         },
         resetView(){
-          this.$data.issues = [];
-          this.$data.services = [];
-          this.$data.filter = [];
-          this.$data.overviewOptions = {};
-          this.$data.miniOptions = {};
-          this.$data.updated = false;
+          this.issues = [];
+          this.services = [];
+          this.filter = [];
+          this.overviewOptions = {};
+          this.miniOptions = {};
+          this.updated = false;
         },
         async loadMiniChart(space, env, issue){
             let options = await fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}`)
@@ -196,8 +196,8 @@
             return this.loadMiniChart(space, env, issue.id)
           })
   
-          this.$data.issues = issues;
           this.$data.overviewOptions = activityOption
+          this.$data.issues = issues;
           
           Promise
           .all(optionRequests)
