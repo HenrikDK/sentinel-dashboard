@@ -270,7 +270,7 @@ let destroy = () => {
 }
 
 components["deployments"] = { template: "#deployments", props: ['env', 'space', 'search'], setup, destroy};
-    
+
 routes.push({path:'/spaces/:space/environments/:env/deployments', name:"deployments-namespace", component: components["deployments"]});
 routes.push({path:'/spaces/:space/deployments', name:"deployments-space", component: components["deployments"]});
 routes.push({path:'/', name:"deployments", component: components["deployments"]});
