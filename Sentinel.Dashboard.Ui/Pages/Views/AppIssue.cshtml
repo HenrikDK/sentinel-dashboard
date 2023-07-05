@@ -197,7 +197,7 @@
         <div class="flex justify-between mb-2">
           <div class="flex">
             <span class="text-sm font-semibold text-slate-700 me-2">Last 24 Hours:</span>
-            <span v-if="dayOptions.series">{{ dayOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
+            <span v-if="charts.day.series">{{ charts.day.series[0].data.reduce((a, b) => a + b, 0) }}</span>
             <span v-else>&nbsp;</span>
           </div>
           <div>
@@ -205,13 +205,13 @@
           </div>
         </div>
         <div class="mb-3">
-          <v-chart v-if="dayOptions" :option="dayOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
+          <v-chart v-if="charts.day" :option="charts.day" :init-options="charts.init" style="width: 308px; height: 55px;"/>
         </div>
 
         <div class="flex justify-between mb-2">
           <div class="flex">
             <span class="text-sm font-semibold text-slate-700 me-2">Last 30 Days:</span>
-            <span v-if="monthOptions.series">{{ monthOptions.series[0].data.reduce((a, b) => a + b, 0) }}</span>
+            <span v-if="charts.month.series">{{ charts.month.series[0].data.reduce((a, b) => a + b, 0) }}</span>
             <span v-else>&nbsp;</span>
           </div>
           <div>
@@ -219,7 +219,7 @@
           </div>
         </div>
         <div class="mb-3">
-          <v-chart v-if="monthOptions" :option="monthOptions" :init-options="initOptions" style="width: 308px; height: 55px;"/>
+          <v-chart v-if="charts.month" :option="charts.month" :init-options="charts.init" style="width: 308px; height: 55px;"/>
         </div>
 
         <span class="mb-0 text-sm font-semibold text-slate-700">Last Seen:</span>
@@ -262,23 +262,25 @@
 </template>
 
 <script type="module">
-  components["app-issue"] = {
-    template: "#app-issue",
-    data: function () {
-      return {
-        error: {},
-        issue: {},
-        index: [],
-        currentIndex: -1,
-        initOptions: {
-          renderer: "svg"
-        },
-        quote: "",
-        display: "app",
-        monthOptions: {},
-        dayOptions: {},
-      };
-    },
+import { createApp, ref, watch, onMounted } from 'vue'
+
+let setup = () => {
+  const error = ref({});
+  const issue = ref({});
+  const index = ref([]);
+  const currentIndex = ref(-1);
+  const charts = ref({ 
+    init:{ renderer: "svg"},
+    day: {},
+    month: {}
+  });
+  const quote = ref("");
+  const display = ref("app");
+  
+  return {error, issue, index, currentIndex, charts, quote, display}
+}
+
+components["app-issue"] = { template: "#app-issue", setup,
     methods: {
       formatBytes: formatBytes,
       getJson(value) {
@@ -327,7 +329,7 @@
     },
     watch: {
       currentIndex(value) {
-        var error = this.$data.index[this.$data.currentIndex];
+        var error = this.index[this.currentIndex];
         try{
           if (typeof error.data === 'string' || error.data instanceof String){
             error.data = JSON.parse(error.data);
@@ -341,7 +343,7 @@
             error.data.message = JSON.parse(error.data.message);
           }
         } catch (e){}
-        this.$data.error = error;
+        this.error = error;
         }
       },
     async mounted () {
@@ -352,28 +354,28 @@
       fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}?timeSpan=24hours`)
         .then(r => r.json())
         .then(j => {
-          this.$data.dayOptions = buildDetailMiniChart(j);
-          this.$data.issue = j.issue;
+          this.charts.day = buildDetailMiniChart(j);
+          this.issue = j.issue;
         });
       
       fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}?timeSpan=30days`)
         .then(r => r.json())
-        .then(j => this.$data.monthOptions = buildDetailMiniChart(j));
+        .then(j => this.charts.month = buildDetailMiniChart(j));
       
       fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}/events`)
       .then(r => r.json())
       .then(j => {
-        this.$data.index = j;
-        this.$data.currentIndex = 0;
+        this.index = j;
+        this.currentIndex = 0;
       });      
       
       fetch("/api/quote")
       .then(r => r.json())
       .then(j => {
-        this.$data.quote = j.data[0]
+        this.quote = j.data[0]
       })
     }
   };
 
-  routes.push({path:'/spaces/:space/environments/:env/app-issues/:issue', name: "app-issue", component: components["app-issue"]})    
+routes.push({path:'/spaces/:space/environments/:env/app-issues/:issue', name: "app-issue", component: components["app-issue"]})    
 </script>
