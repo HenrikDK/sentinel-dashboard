@@ -71,7 +71,7 @@ let setup = (props) =>{
   const route = useRoute()
   
   function getNavLink(type){
-    if (type === 'app'){
+    if (type !== 'deployments' ){
       if (props.space && props.env && props.env.includes('-')){
         return { name: 'issues', params: { env: props.env, space: props.space, type: type }, query: route.query}
       }
@@ -79,18 +79,7 @@ let setup = (props) =>{
         return { name: 'issues', params: { env: props.env + '-prd', space: props.space, type: type }, query: route.query}
       }
       
-      return { name: 'app-environments', query: route.query}
-    }
-    
-    if (type === 'data'){
-      if (props.space && props.env && props.env.includes('-')){
-        return { name: 'issues', params: { env: props.env, space: props.space, type: type }, query: route.query}
-      }
-      if (props.space && props.env && !props.env.includes('-')){
-        return { name: 'issues', params: { env: props.env + '-prd', space: props.space, type: type }, query: route.query}
-      }
-      
-      return { name: 'data-environments', query: route.query}              
+      return { name: 'environments', params: { type: type }, query: route.query}
     }
     
     if (type === 'deployments'){
