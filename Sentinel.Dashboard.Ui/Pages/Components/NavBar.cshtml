@@ -54,7 +54,7 @@
             </template>
             <template v-else-if="['issues', 'issue'].includes($route.name)">
               <div>
-                <environment-select :values="environments" :space="space" :env="env" ></environment-select>
+                <environment-select :values="environments"></environment-select>
               </div>
             </template>
           </div>
@@ -98,5 +98,5 @@ let setup = (props) =>{
   return { getNavLink }
 }
 
-components["nav-bar"] = {template: "#nav-bar", emits: ['search'], props: ['environments', 'space', 'env'], setup};
+components["nav-bar"] = {template: "#nav-bar", emits: ['search'], props: ['environments'], setup};
 </script>
