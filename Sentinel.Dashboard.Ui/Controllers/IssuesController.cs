@@ -13,7 +13,7 @@ public class IssuesController : ControllerBase
         _issuesRepository = issuesRepository;
     }
 
-    [HttpGet("api/spaces/{space}/environments/{environment}/{type}")]
+    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/issues")]
     public ActionResult<List<Issue>> GetAppIssues(string space, string environment, string type)
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
@@ -23,7 +23,7 @@ public class IssuesController : ControllerBase
         return Ok(issues);
     }
 
-    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/graph")]
+    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/issues/graph")]
     public JsonResult GetAppIssuesGraph(string space, string environment, string type, [FromQuery] string timeSpan = "24hours")
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
@@ -49,7 +49,7 @@ public class IssuesController : ControllerBase
         return new JsonResult(new { categories, series });
     }
     
-    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/{issueId}")]
+    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/issues/{issueId}")]
     public JsonResult GetAppIssueDetail(string space, string environment, string type, string issueId, [FromQuery] string timeSpan = "24hours")
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
@@ -92,7 +92,7 @@ public class IssuesController : ControllerBase
         return new JsonResult(new { categories, series, issue, firstSeenIndex, lastSeenIndex });
     }
     
-    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/{issueId}/events")]
+    [HttpGet("api/spaces/{space}/environments/{environment}/{type}/issues/{issueId}/events")]
     public ActionResult<List<Error>> GetAppIssueEvents(string space, string environment, string type, string issueId)
     {
         var eventType = type.StartsWith("app") ? "Error" : "Warning";
