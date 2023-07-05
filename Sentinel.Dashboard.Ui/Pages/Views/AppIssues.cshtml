@@ -18,9 +18,14 @@
 
     <div class="flex flex-wrap text-sm w-full min-h-[60px] max-w-screen-xl mx-auto py-2" aria-label="Service filter list">
       <template v-for="s in services">
-        <button class="bg-transparent font-semibold p-2 border border-solid rounded-xl shadow-md text-black mx-2 my-1
-              hover:text-white aria-selected:text-white" 
-                :class="['border-[' + s.color + ']', 'hover:bg-[' + s.color + ']', 'aria-selected:bg-[' + s.color + ']' ]"
+        <button v-if="s.color" class="font-semibold p-2 mx-2 my-1 border border-solid rounded-md shadow-sm text-gray-600 border-gray-300"
+                :class="['hover:border-[' + s.color + ']', 'aria-selected:border-[' + s.color + ']', 
+                        'hover:text-black', 'aria-selected:text-black',
+                        'hover:bg-[' + s.color + ']/[0.3]', 'aria-selected:bg-[' + s.color + ']/[0.3]']"
+                @@click="selectService(s.name, false)" @@dblclick="selectService(s.name, true)" :aria-selected="filter.includes(s.name)">
+          {{ s.name }}
+        </button>
+        <button v-else class="font-semibold p-2 mx-2 my-1 border border-solid rounded-md shadow-sm text-gray-600 border-gray-300"
                 @@click="selectService(s.name, false)" @@dblclick="selectService(s.name, true)" :aria-selected="filter.includes(s.name)">
           {{ s.name }}
         </button>
