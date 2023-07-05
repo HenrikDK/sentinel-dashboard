@@ -1,4 +1,4 @@
-﻿<template id="app-issue">
+﻿<template id="issue">
 <div class="flex w-full max-w-screen-xl mx-auto justify-center py-4">
   <div class="w-full content-start grid grid-cols-[minmax(100px,_auto)_325px] gap-2">
     <section class="pr-0 border-r border-gray-300">
@@ -12,7 +12,7 @@
                   <span>Event - </span> 
                   <a class="text-blue-600 hover:underline uppercase" href="javascript:void(0)" v-on:click="getJson(error.data)">JSON {{ formatBytes(error.size) }}</a>
                   <span> - </span> 
-                  <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/app-events?timeSpan=30days`" target="_blank">Query</a>
+                  <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues/${issue.id}/events?timeSpan=30days`" target="_blank">Query</a>
                 </div>
               </div>
               <div class="mx-2 w-0.5 min-h-[1em] bg-gray-300 self-stretch inline-block"></div>
@@ -201,7 +201,7 @@
             <span v-else>&nbsp;</span>
           </div>
           <div>
-            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/app-minichart`" target="_blank">Query</a>    
+            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues/${issue.id}/chart`" target="_blank">Query</a>    
           </div>
         </div>
         <div class="mb-3">
@@ -215,7 +215,7 @@
             <span v-else>&nbsp;</span>
           </div>
           <div>
-            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/issues/${issue.id}/queries/app-minichart?timeSpan=30days`" target="_blank">Query</a>    
+            <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues/${issue.id}/chart?timeSpan=30days`" target="_blank">Query</a>    
           </div>
         </div>
         <div class="mb-3">
@@ -262,9 +262,11 @@
 </template>
 
 <script type="module">
-import { createApp, ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
-let setup = () => {
+let setup = (props, ctx) => {
+  const route = useRoute()
   const error = ref({});
   const issue = ref({});
   const index = ref([]);
@@ -277,105 +279,112 @@ let setup = () => {
   const quote = ref("");
   const display = ref("app");
   
-  return {error, issue, index, currentIndex, charts, quote, display}
+  let getJson = (value) => {
+    var new_page = window.open();
+    new_page.document.write(JSON.stringify(value));
+  }
+
+  let shouldDisplay = (system, display) => {
+    return (system && display === 'full') || !system
+  }
+
+  let validValue = (value) => {
+    return !((typeof(value) === 'object' && value !== null) || value === null || value === "")
+  }
+
+  let toTimeAgo = (value) => {
+    return moment(value).fromNow();
+  }
+
+  let parseStackTrace = (value) => {
+    if (!value) return [];
+    
+    let lines = value.split(/\r?\n/);
+    let trace = lines.map(x => {
+      var method = x;
+      var file = '';
+      var line = '';
+      var system = (x.indexOf('Microsoft.') > 0 || x.indexOf('System.') > 0);
+      
+      if (method.indexOf('   at ') === 0){
+        method = method.replace('   at ', '');
+      }
+      
+      if (method.indexOf('in ') > 0){
+        let segments = method.split("in ");
+        method = segments[0];
+        file = segments[1];
+      }
+      
+      if (file.indexOf(':line') > 0){
+        line = file.substring(file.indexOf(':line') + 6)
+        file = file.substring(0, file.indexOf(':line'))
+      }
+      
+      return {method, file, line, system}
+    })
+    
+    return trace
+  }
+  
+  watch(currentIndex, () => {
+    var event = index.value[currentIndex.value];
+     
+    try {
+      if (typeof event.data === 'string' || event.data instanceof String){
+        event.data = JSON.parse(event.data);
+      }
+    } catch (e) {
+      event.dataRecieved = error.data;
+      event.data = { message: {}};
+    }
+    try {
+      if (typeof event.data.message === 'string' || event.data.message instanceof String){
+        event.data.message = JSON.parse(event.data.message);
+      }
+    } catch (e){}
+    
+    error.value = event;
+  });
+  
+  onMounted(async ()=> {
+    let issueId = route.params.issue;
+    let env = route.params.env;
+    let space = route.params.space;
+    let type = route.params.type
+
+    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}?timeSpan=24hours`)
+      .then(r => r.json())
+      .then(j => {
+        charts.value.day = buildDetailMiniChart(j);
+        issue.value = j.issue;
+      });
+    
+    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}?timeSpan=30days`)
+      .then(r => r.json())
+      .then(j => charts.value.month = buildDetailMiniChart(j));
+    
+    fetch(`/api/spaces/${space}/environments/${env}/${type}-issues/${issueId}/events`)
+    .then(r => r.json())
+    .then(j => {
+      index.value = j;
+      currentIndex.value = 0;
+    });
+    
+    fetch("/api/quote")
+    .then(r => r.json())
+    .then(j => {
+      quote.value = j.data[0]
+    })
+  });
+  
+  return {
+    error, issue, index, currentIndex, charts, quote, display,
+    formatBytes, getJson, shouldDisplay, validValue, toTimeAgo, parseStackTrace
+  }
 }
 
-components["app-issue"] = { template: "#app-issue", setup,
-    methods: {
-      formatBytes: formatBytes,
-      getJson(value) {
-        var new_page = window.open();
-        new_page.document.write(JSON.stringify(value));
-      },
-      shouldDisplay(system, display) {
-        return (system && display === 'full') || !system
-      },
-      validValue(value) {
-          return !((typeof(value) === 'object' && value !== null) || value === null || value === "")
-      },
-      toTimeAgo(value) {
-        return moment(value).fromNow();
-      },
-      parseStackTrace (value) {
-        if (!value) return [];
-        
-        let lines = value.split(/\r?\n/);
-        let trace = lines.map(x => {
-          var method = x;
-          var file = '';
-          var line = '';
-          var system = (x.indexOf('Microsoft.') > 0 || x.indexOf('System.') > 0);
-          
-          if (method.indexOf('   at ') === 0){
-            method = method.replace('   at ', '');
-          }
-          
-          if (method.indexOf('in ') > 0){
-            let segments = method.split("in ");
-            method = segments[0];
-            file = segments[1];
-          }
-          
-          if (file.indexOf(':line') > 0){
-            line = file.substring(file.indexOf(':line') + 6)
-            file = file.substring(0, file.indexOf(':line'))
-          }
-          
-          return {method, file, line, system}
-        })
-        
-        return trace
-      }
-    },
-    watch: {
-      currentIndex(value) {
-        var error = this.index[this.currentIndex];
-        try{
-          if (typeof error.data === 'string' || error.data instanceof String){
-            error.data = JSON.parse(error.data);
-          }
-        } catch (e){
-          error.dataRecieved = error.data;
-          error.data = { message: {}};
-        }
-        try{
-          if (typeof error.data.message === 'string' || error.data.message instanceof String){
-            error.data.message = JSON.parse(error.data.message);
-          }
-        } catch (e){}
-        this.error = error;
-        }
-      },
-    async mounted () {
-      let issue = this.$route.params.issue;
-      let env = this.$route.params.env;
-      let space = this.$route.params.space;
+components["issue"] = { template: "#issue", setup };
 
-      fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}?timeSpan=24hours`)
-        .then(r => r.json())
-        .then(j => {
-          this.charts.day = buildDetailMiniChart(j);
-          this.issue = j.issue;
-        });
-      
-      fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}?timeSpan=30days`)
-        .then(r => r.json())
-        .then(j => this.charts.month = buildDetailMiniChart(j));
-      
-      fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}/events`)
-      .then(r => r.json())
-      .then(j => {
-        this.index = j;
-        this.currentIndex = 0;
-      });      
-      
-      fetch("/api/quote")
-      .then(r => r.json())
-      .then(j => {
-        this.quote = j.data[0]
-      })
-    }
-  };
-
-routes.push({path:'/spaces/:space/environments/:env/app-issues/:issue', name: "app-issue", component: components["app-issue"]})    
+routes.push({path:'/spaces/:space/environments/:env/:type/:issue', name: "issue", component: components["issue"]})    
 </script>
