@@ -5,9 +5,9 @@
                 bg-gray-200 text-gray-500 leading-snug outline-none focus:text-gray-700 focus:bg-gray-100 focus:border-gray-500">
 
       <!-- Label -->
-      <template v-if="this.$route.params?.env">
+      <template v-if="$route.params?.env">
         <div class="flex items-center h-9 absolute left-0 bg-transparent truncate leading-snug pl-3.5">
-          Environment: {{ env }}
+          Environment: {{ $route.params?.env }}
         </div>
       </template>
       <template v-else-if="values && values?.length > 0">
@@ -38,53 +38,37 @@
     </button>
 
     <!-- Options -->
-    <div tabindex="-1" data-ns="1"
-         :class="isOpen ? 'visible' : 'hidden'"  
+    <div id="environment-options" tabindex="-1" data-ns="1"
          class="max-h-60 absolute cursor-pointer -left-px -right-px transform translate-y-2 border border-gray-400 
-            -mt-px overflow-y-auto z-50 bg-gray-100 flex flex-col rounded" id="environment-options">
+            -mt-px overflow-y-auto z-50 bg-gray-100 flex flex-col rounded"
+         :class="isOpen ? 'visible' : 'hidden'">
       
       <div class="flex flex-col p-0 m-0 list-none" role="listbox">
         <template v-if="values && values.length > 0">
           <template v-for="s in values">
-            <div v-if="s.space == space && s.environments.includes(env)"
-                class="text-sm bg-gray-300 text-gray-800 px-2 border-y border-gray-400"
-                 >
+            <div v-if="s.space == $route.params.space && s.environments.includes($route.params.env)"
+                class="text-sm bg-gray-300 text-gray-800 px-2 border-y border-gray-400">
               Current: {{ s.root}}
             </div>
-            <template v-if="s.space == space && s.environments.includes(env)" v-for="e in s.environments">
+            <template v-if="s.space == $route.params.space && s.environments.includes($route.params.env)" 
+                      v-for="e in s.environments">
               <div class="aria-selected:font-medium aria-selected:text-black bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-brand">
-                <router-link v-if="$route.name?.includes('app-issue')"
-                             class="py-2 px-4 text-md font-normal block whitespace-nowrap"
-                             :to="{ name: 'app-issues', params: { env: e, space: s.space }}"
-                             @@click="selectEnvironment">
-                  {{ e }}
-                </router-link>
-                <router-link v-else
-                             class="py-2 px-4 text-md font-normal block whitespace-nowrap"
-                             :to="{ name: 'data-issues', params: { env: e, space: s.space }}"
-                             @@click="selectEnvironment">
+                <router-link class="py-2 px-4 text-md font-normal block whitespace-nowrap" @@click="selectEnvironment"
+                      :to="{ name: 'issues', params: { env: e, space: s.space, type: $route.params.type }, query: $route.query}">
                   {{ e }}
                 </router-link>
               </div>
             </template>
           </template>
           <template v-for="s in values">
-            <div v-if="s.space != space || !s.environments.includes(env)"
+            <div v-if="s.space != $route.params.space || !s.environments.includes($route.params.env)"
                  class="text-sm bg-gray-300 text-gray-800 px-2 border-y border-gray-400">
               Namespace: {{ s.root}}
             </div>
-            <template v-if="s.space != space || !s.environments.includes(env)" v-for="e in s.environments">
+            <template v-if="s.space != $route.params.space || !s.environments.includes($route.params.env)" v-for="e in s.environments">
               <div class="aria-selected:font-medium aria-selected:text-black bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-brand">
-                <router-link v-if="$route.name?.includes('app-issue')"
-                             class="py-2 px-4 text-md font-normal block whitespace-nowrap"
-                             :to="{ name: 'app-issues', params: { env: e, space: s.space }}"
-                             @@click="selectEnvironment">
-                  {{ e }}
-                </router-link>
-                <router-link v-else
-                             class="py-2 px-4 text-md font-normal block whitespace-nowrap"
-                             :to="{ name: 'data-issues', params: { env: e, space: s.space }}"
-                             @@click="selectEnvironment">
+                <router-link class="py-2 px-4 text-md font-normal block whitespace-nowrap" @@click="selectEnvironment"
+                      :to="{ name: 'issues', params: { env: e, space: s.space, type: $route.params.type }, query: $route.query}">
                   {{ e }}
                 </router-link>
               </div>
@@ -106,6 +90,7 @@
 import { ref, onMounted } from 'vue'
   
 let setup = () => {
+  
   const noOptions = ref(false);
   const isOpen = ref(false);
   const selected = ref([]);
@@ -130,8 +115,11 @@ let setup = () => {
     document.addEventListener('click', clickHandler);
   })
   
-  return {noOptions, isOpen, selected, el, selectEnvironment, clickHandler, onMounted}
+  return {
+    noOptions, isOpen, selected, el, 
+    selectEnvironment, clickHandler, onMounted
+  }
 }
 
-components["environment-select"] = { template: "#environment-select", props: ['values', 'space', 'env'], setup};
+components["environment-select"] = { template: "#environment-select", props: ['values'], setup};
 </script>
