@@ -127,22 +127,22 @@
      methods: {
         selectService(service, clear = false){
           if (clear){
-            this.$data.filter = [];
+            this.filter = [];
           }
-          if (this.$data.filter.includes(service)){
-            this.$data.filter = this.$data.filter.filter(x => x !== service)
+          if (this.filter.includes(service)){
+            this.filter = this.filter.filter(x => x !== service)
           } else{
-            this.$data.filter.push(service);
+            this.filter.push(service);
           }
           
-          this.$data.overviewOptions.legend.selected = {}
-          if (this.$data.filter.length > 0){
-            this.$data.services.forEach(x => {
-              this.$data.overviewOptions.legend.selected[x.name] = this.$data.filter.includes(x.name);
+          this.overviewOptions.legend.selected = {}
+          if (this.filter.length > 0){
+            this.services.forEach(x => {
+              this.overviewOptions.legend.selected[x.name] = this.filter.includes(x.name);
             })
           } else {
-            this.$data.services.forEach(x => {
-              this.$data.overviewOptions.legend.selected[x.name] = true;
+            this.services.forEach(x => {
+              this.overviewOptions.legend.selected[x.name] = true;
             })
           }
         },
@@ -150,22 +150,22 @@
           return moment(value).fromNow();
         },
         populateServices(){
-          if (this.$data.services && this.$data.services.length > 0 ) return;
-          let chart = this.$refs.overview.chart;
+          if (this.services && this.services.length > 0 ) return;
+          let chart = this.overview.chart;
           let series = chart.getModel().getSeries();
           let services = series
                     .map(s => { return { name: s.name, color: chart.getVisual({seriesIndex: s.seriesIndex }, 'color')}})
                     .sort(x => x.name);
           
-          this.$data.services = services;
+          this.services = services;
         },
         resetView(){
-          this.$data.issues = [];
-          this.$data.services = [];
-          this.$data.filter = [];
-          this.$data.overviewOptions = {};
-          this.$data.miniOptions = {};
-          this.$data.updated = false;
+          this.issues = [];
+          this.services = [];
+          this.filter = [];
+          this.overviewOptions = {};
+          this.miniOptions = {};
+          this.updated = false;
         },
         async loadMiniChart(space, env, issue){
             let options = await fetch(`/api/spaces/${space}/environments/${env}/data-issues/${issue}`)
