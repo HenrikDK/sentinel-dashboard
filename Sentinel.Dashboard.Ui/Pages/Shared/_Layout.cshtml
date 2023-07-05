@@ -136,7 +136,7 @@ let setup = () => {
     space.value = route.params.space;
     env.value = route.params.env;
     issue.value = route.params.issue;
-  })
+  });
   
   onMounted(async () => {
     loadEnvironments();
