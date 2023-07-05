@@ -6,7 +6,7 @@
         <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues/chart`" target="_blank">Query</a>
       </div>
       <div class="flex">
-        <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@rendered="populateServices" style="width: 1280px; height: 180px;"/>
+        <v-chart ref="overview" :option="charts.overview" :init-options="charts.init" @@rendered="populateServices" style="width: 1280px; height: 180px;"/>
       </div>
     </div>
     <div v-else class="flex justify-center">
@@ -95,7 +95,7 @@
           </div>
           <div class="w-[270px] h-[55px] mx-4 self-center" aria-label="Issue error events activity graph">
             <div v-if="updated">
-              <v-chart :option="miniOptions[issue.id]" :init-options="initOptions" class="w-[270px] h-[55px] relative"></v-chart>
+              <v-chart :option="charts.mini[issue.id]" :init-options="charts.init" class="w-[270px] h-[55px] relative"></v-chart>
             </div>
             <div v-else>
               <spinner></spinner>
@@ -115,112 +115,124 @@
 </template>
 
 <script type="module">
-  components["issues"] = {
-     template: "#issues",
-     data: function () {
-        return {
-          issues: [],
-          services: [],
-          filter: [],
-          initOptions: { renderer: "svg" },
-          overviewOptions: {},
-          miniOptions: {},
-          updated: false,
-        };
-     },
-     props: [],
-     methods: {
-        selectService(service, clear = false){
-          if (clear){
-            this.$data.filter = [];
-          }
-          if (this.$data.filter.includes(service)){
-            this.$data.filter = this.$data.filter.filter(x => x !== service)
-          } else{
-            this.$data.filter.push(service);
-          }
-          
-          this.$data.overviewOptions.legend.selected = {}
-          if (this.$data.filter.length > 0){
-            this.$data.services.forEach(x => {
-              this.$data.overviewOptions.legend.selected[x.name] = this.$data.filter.includes(x.name);
-            })
-          } else {
-            this.$data.services.forEach(x => {
-              this.$data.overviewOptions.legend.selected[x.name] = true;
-            })
-          }
-        },
-        toTimeAgo(value){
-          return moment(value).fromNow();
-        },
-        populateServices(){
-          if (this.$data.services && this.$data.services.length > 0 ) return;
-          let chart = this.$refs.overview.chart;
-          let series = chart.getModel().getSeries();
-          let services = series
-                    .map(s => { return { name: s.name, color: chart.getVisual({seriesIndex: s.seriesIndex }, 'color')}})
-                    .sort(x => x.name);
-          
-          this.services = services;
-        },
-        resetView(){
-          this.issues = [];
-          this.services = [];
-          this.filter = [];
-          this.overviewOptions = {};
-          this.miniOptions = {};
-          this.updated = false;
-        },
-        async loadMiniChart(space, env, issue, type){
-            let options = await fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issue}`)
-                .then(r => r.json())
-                .then(json => buildOverviewMiniChart(json.categories, json.series));
-            return {options, issue}
-        },
-        async initView(){
-          let env = this.$route.params.env;
-          let space = this.$route.params.space;
-          let type = this.$route.params.type;
-          
-          const [activityOption, issues] = await Promise.all([
-            fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/graph`)
-              .then(r => r.json())
-              .then(json => buildOverviewChart(json.categories, json.series)),
-            
-            fetch(`/api/spaces/${space}/environments/${env}/${type}/issues`)
-            .then(r => r.json()),
-          ]);
-          
-          let optionRequests = issues.map(issue => {
-            this.miniOptions[issue.id] = {};
-            return this.loadMiniChart(space, env, issue.id, type)
-          })
+import { ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+
+let setup = (props, ctx) => {
+  const route = useRoute();
+  const overview = ref(null);
+  const updated = ref(false);
+  const issues = ref([]);
+  const services = ref([]);
+  const filter = ref([]);
+  const charts = ref({
+    init: { renderer: "svg" },
+    overview: {},
+    mini: {}
+  });
   
-          this.overviewOptions = activityOption
-          this.issues = issues;
-          
-          Promise
-          .all(optionRequests)
-          .then(results => {
-            results.map(x => {
-                this.$data.miniOptions[x.issue] = x.options;
-              });
-            this.$data.updated = true;
-          })
-          .catch(e => {console.error(e);});
-        }
-     },
-     watch: {
-        async '$route' () {
-            this.resetView();
-            await this.initView();
-         }
-     },
-     async mounted () {
-        await this.initView();
-     }
-  };
+  let toTimeAgo = (value) => {
+    return moment(value).fromNow();
+  }
   
-  routes.push({path:'/spaces/:space/environments/:env/:type/issues', name: "issues", component: components["issues"]})    
+  let selectService = (service, clear = false) => {
+    if (clear){
+      filter.value = [];
+    }
+    if (filter.value.includes(service)){
+      filter.value = filter.value.filter(x => x !== service)
+    } else{
+      filter.value.push(service);
+    }
+    
+    charts.value.overview.legend.selected = {}
+    if (filter.value.length > 0){
+      services.value.forEach(x => {
+        charts.value.overview.legend.selected[x.name] = filter.value.includes(x.name);
+      })
+    } else {
+      services.value.forEach(x => {
+        charts.value.overview.legend.selected[x.name] = true;
+      })
+    }
+  }
+  
+  let populateServices = () => {
+    if (services.value && services.value.length > 0 ) return;
+    let chart = overview.value.chart;
+    let series = chart.getModel().getSeries();
+    let names = series
+      .map(s => { return { name: s.name, color: chart.getVisual({seriesIndex: s.seriesIndex }, 'color')}})
+      .sort(x => x.name);
+    
+    services.value = names;
+  }
+
+  let resetView = () => {
+    issues.value = [];
+    services.value = [];
+    filter.value = [];
+    charts.value.overview = {};
+    charts.value.mini = {};
+    updated.value = false;
+  }
+  
+  let loadMiniChart = async (space, env, type, issue) => {
+    let options = await fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issue}`)
+      .then(r => r.json())
+      .then(json => buildOverviewMiniChart(json.categories, json.series));
+    return {options, issue}
+  }
+
+  let initView = async () => {
+    let space = route.params.space;
+    let env = route.params.env;
+    let type = route.params.type;
+    
+    const [activityOption, newIssues] = await Promise.all([
+      fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/graph`)
+        .then(r => r.json())
+        .then(json => buildOverviewChart(json.categories, json.series)),
+      
+      fetch(`/api/spaces/${space}/environments/${env}/${type}/issues`)
+      .then(r => r.json()),
+    ]);
+    
+    let optionRequests = newIssues.map(issue => {
+      charts.value.mini[issue.id] = {};
+      return loadMiniChart(space, env, type, issue.id)
+    });
+
+    charts.value.overview = activityOption
+    issues.value = newIssues;
+    
+    Promise
+    .all(optionRequests)
+    .then(results => {
+      results.map(x => {
+          charts.value.mini[x.issue] = x.options;
+        });
+      updated.value = true;
+    })
+    .catch(e => {console.error(e);});
+  }
+  
+  watch(async () => '$route', async () => {
+    resetView();
+    await initView();
+  });
+
+  onMounted(async () => {
+    await initView();
+  });
+  
+  return {
+    issues, services, filter, charts, updated, overview,
+    toTimeAgo, selectService, populateServices, resetView, initView
+  }
+}
+
+components["issues"] = { template: "#issues", setup };
+  
+routes.push({path:'/spaces/:space/environments/:env/:type/issues', name: "issues", component: components["issues"]})    
 </script>
