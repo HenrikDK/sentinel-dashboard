@@ -1,9 +1,9 @@
-﻿<template id="app-issues">
+﻿<template id="issues">
   <div class="mt-2">
     <div v-if="issues.length > 0" class="w-full max-w-screen-xl mx-auto">
       <div class="w-full flex justify-between translate-y-2">
         <div class="text-gray-500">App errors over the last 24 hours</div>
-        <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/app-chart`" target="_blank">Query</a>
+        <a class="text-blue-600 hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues/chart`" target="_blank">Query</a>
       </div>
       <div class="flex">
         <v-chart ref="overview" :option="overviewOptions" :init-options="initOptions" @@rendered="populateServices" style="width: 1280px; height: 180px;"/>
@@ -41,7 +41,7 @@
               Issue
             </div>
             <span class="text-xs text-gray-500 pr-2"> - </span>
-            <a class="text-blue-600 text-xs hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/app-issues?timeSpan=30days`" target="_blank">Query</a>
+            <a class="text-blue-600 text-xs hover:underline" :href="`humio/spaces/${$route.params.space}/environments/${$route.params.env}/queries/${$route.params.type}/issues?timeSpan=30days`" target="_blank">Query</a>
           </div>
           <div class="w-[270px] mx-4">
             <div class="flex">
@@ -61,7 +61,7 @@
           <div class="ml-4 mr-2 grow shrink w-60 basis-0">
             <div>
               <div class="mb-0.5 leading-4 truncate max-w-full" aria-label="Issue Exception">
-                <router-link :to="{ name: 'app-issue', params: { env: $route.params.env, issue: issue.id }, query: $route.query }" aria-label="Issue link">
+                <router-link :to="{ name: 'issue', params: { env: $route.params.env, issue: issue.id, type: $route.params.type }, query: $route.query }" aria-label="Issue link">
                   <span>
                     <span class="text-blue-500 font-semibold" v-if="issue.exceptionType">{{ issue.exceptionType }}</span>
                     <span class="text-blue-500 font-semibold" v-else>NoExceptionFound!</span>
@@ -115,8 +115,8 @@
 </template>
 
 <script type="module">
-  components["app-issues"] = {
-     template: "#app-issues",
+  components["issues"] = {
+     template: "#issues",
      data: function () {
         return {
           issues: [],
@@ -172,8 +172,8 @@
           this.miniOptions = {};
           this.updated = false;
         },
-        async loadMiniChart(space, env, issue){
-            let options = await fetch(`/api/spaces/${space}/environments/${env}/app-issues/${issue}`)
+        async loadMiniChart(space, env, issue, type){
+            let options = await fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/${issue}`)
                 .then(r => r.json())
                 .then(json => buildOverviewMiniChart(json.categories, json.series));
             return {options, issue}
@@ -181,23 +181,24 @@
         async initView(){
           let env = this.$route.params.env;
           let space = this.$route.params.space;
+          let type = this.$route.params.type;
           
           const [activityOption, issues] = await Promise.all([
-            fetch(`/api/spaces/${space}/environments/${env}/app-issues/graph`)
+            fetch(`/api/spaces/${space}/environments/${env}/${type}/issues/graph`)
               .then(r => r.json())
               .then(json => buildOverviewChart(json.categories, json.series)),
             
-            fetch(`/api/spaces/${space}/environments/${env}/app-issues`)
+            fetch(`/api/spaces/${space}/environments/${env}/${type}/issues`)
             .then(r => r.json()),
           ]);
           
           let optionRequests = issues.map(issue => {
-            this.$data.miniOptions[issue.id] = {};
-            return this.loadMiniChart(space, env, issue.id)
+            this.miniOptions[issue.id] = {};
+            return this.loadMiniChart(space, env, issue.id, type)
           })
   
-          this.$data.overviewOptions = activityOption
-          this.$data.issues = issues;
+          this.overviewOptions = activityOption
+          this.issues = issues;
           
           Promise
           .all(optionRequests)
@@ -221,5 +222,5 @@
      }
   };
   
-  routes.push({path:'/spaces/:space/environments/:env/app-issues', name: "app-issues", component: components["app-issues"]})    
+  routes.push({path:'/spaces/:space/environments/:env/:type/issues', name: "issues", component: components["issues"]})    
 </script>
