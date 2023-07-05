@@ -80,9 +80,6 @@ const router = createRouter({
 
 let setup = () => {
   const route = useRoute()
-  const env = ref(undefined);
-  const space = ref(undefined);
-  const issue = ref(undefined);  
   const search = ref('');
   const timer = ref('');
   const spaces = ref([]);
@@ -132,12 +129,6 @@ let setup = () => {
     updateSpaces();
   });
   
-  watch(()=> route.path, () => {
-    space.value = route.params.space;
-    env.value = route.params.env;
-    issue.value = route.params.issue;
-  });
-  
   onMounted(async () => {
     loadEnvironments();
     
@@ -145,7 +136,7 @@ let setup = () => {
   });
   
   return {
-    env, space, issue, search, spaces, environments,
+    search, spaces, environments,
     loadEnvironments, updateSpaces
   }
 }
