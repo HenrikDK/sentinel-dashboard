@@ -79,6 +79,7 @@ let setup = (props, ctx) => {
     deploying: [],
   });
   const loading = ref(true);
+  const timer = ref('')
   const repositories = ref([]);
   const expanded = ref({});
   const alerts = ref([]);
@@ -98,142 +99,140 @@ let setup = (props, ctx) => {
       expanded.value[value] = true;
     }
   }
+
+  let isCurrent = (value) => {
+    const now = luxon.DateTime.local();
+    const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
+    const diff = past.diff(now, 'minutes');
+    return Math.abs(diff.minutes) < 5;
+  }
   
+  let updateModel = () => {
+    let grouped = _.groupBy(deployments.value, x => x.metric.github_org + '/' + x.metric.github_repository)
+                
+    let results = {};
+    Object.keys(grouped).sort().forEach(g => {
+      let repository_pods = grouped[g];
+      let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
+      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
+      let summary = {
+          'workloads': names,
+      }
+      
+      let repository = {
+          'name': g,
+          'matched': true,
+          'space': repository_pods[0].metric.aks_space,
+          'namespace': repository_pods[0].metric.namespace.split('-')[0],
+          'environments': environments,
+          'workloads': [],
+          'summary': summary
+      }
+      
+      names.forEach(x => {
+        let instances = repository_pods.filter(v => v.metric.aks_name === x)
+        let alarms = alerts.value.filter(a => a.metric.aks_name === x )
+        
+        let result = {
+          'name': x,
+          'instances': instances, 
+        }
+        
+        environments.forEach(e => {
+          let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
+          let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
+          
+          let metrics = true;
+          if (working.length === 0 && missing.length > 0){
+            metrics = false;
+          }
+          
+          let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
+          
+          result[e] = {
+            'instance': most_recent,
+            'metrics': metrics,
+            'alerts': alarms.filter(a => a.metric.aks_environment === e)
+          };
+        })
+        
+        repository.workloads.push(result)
+      });
+      
+      environments.forEach(e => {
+          let missing = repository.workloads.some(w => w[e].metrics === false);
+          summary[e] = {
+            'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
+            'metrics': !missing,
+            'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+          }
+      })
+      
+      results[repository.name] = repository;
+    })
+    
+    let alarms = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
+    alarms = Array.from(new Set(alarms));
+    activity.value.alerts = alarms;
+    
+    let gRepositories = Object.entries(results).map(r => r[1]);
+    let warnings = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
+    warnings = warnings.filter(x => !alarms.includes(x));
+    activity.value.warnings = warnings;
+    
+    let deploying = deployments.value.filter(x => isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
+    deploying = Array.from(new Set(deploying));
+    deploying = deploying.filter(x => !alarms.includes(x) && !warnings.includes(x));
+    activity.value.deploying = deploying;
+    
+    repositories.value = results;
+    loading.value = false;
+  }
+  
+  let fetchData = () => {
+    loading.value = true;
+    fetch("/api/deployments")
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === "success"){
+            deployments.value = j.data.result
+        }
+    });
+    
+    fetch("/api/alerts")
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === "success"){
+            alerts.value = j.data.result
+        }
+    });
+  }
+  
+  watch(deployments, () => {
+    updateModel();
+  })
+
+  watch(alerts, () => {
+    updateModel();
+  })
+  
+  onMounted(async () => {
+    fetchData();
+    
+    timer.value = setInterval(fetchData, 10000);
+  })
+    
   return {
     ns, activity, loading, repositories, expanded, alerts, deployments,
-    showHeader, toggleDetails
+    showHeader, toggleDetails, isCurrent, updateModel, fetchData
   }
 }
 
-components["live"] = { template: "#live",
-      methods: {
-        updateModel(){
-          let grouped = _.groupBy(this.deployments, x => x.metric.github_org + '/' + x.metric.github_repository)
-                      
-          let results = {};
-          Object.keys(grouped).sort().forEach(g => {
-            let repository_pods = grouped[g];
-            let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
-            let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
-            let summary = {
-                'workloads': names,
-            }
-            
-            let repository = {
-                'name': g,
-                'matched': true,
-                'space': repository_pods[0].metric.aks_space,
-                'namespace': repository_pods[0].metric.namespace.split('-')[0],
-                'environments': environments,
-                'workloads': [],
-                'summary': summary
-            }
-            
-            names.forEach(x => {
-              let instances = repository_pods.filter(v => v.metric.aks_name === x)
-              let alerts = this.alerts.filter(a => a.metric.aks_name === x )
-              
-              let result = {
-                'name': x,
-                'instances': instances, 
-              }
-              
-              environments.forEach(e => {
-                let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
-                let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
-                
-                let metrics = true;
-                if (working.length === 0 && missing.length > 0){
-                  metrics = false;
-                }
-                
-                let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
-                
-                result[e] = {
-                  'instance': most_recent,
-                  'metrics': metrics,
-                  'alerts': alerts.filter(a => a.metric.aks_environment === e)
-                };
-              })
-              
-              repository.workloads.push(result)
-            });
-            
-            environments.forEach(e => {
-                let missing = repository.workloads.some(w => w[e].metrics === false);
-                summary[e] = {
-                  'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
-                  'metrics': !missing,
-                  'alerts': this.alerts.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
-                }
-            })
-            
-            results[repository.name] = repository;
-          })
-          
-          let alerts = this.alerts.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-          alerts = Array.from(new Set(alerts));
-          this.activity.alerts = alerts;
-          
-          let repositories = Object.entries(results).map(r => r[1]);
-          let warnings = repositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
-          warnings = warnings.filter(x => !alerts.includes(x));
-          this.activity.warnings = warnings;
-          
-          let deploying = this.deployments.filter(x => this.isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-          deploying = Array.from(new Set(deploying));
-          deploying = deploying.filter(x => !alerts.includes(x) && !warnings.includes(x));
-          this.activity.deploying = deploying;
-          
-          this.repositories = results;
-          this.loading = false;
-        },
-        fetchData(){
-          this.loading = true;
-          fetch("/api/deployments")
-          .then(r => r.json())
-          .then(j => {
-              if (j.status === "success"){
-                  this.$data.deployments = j.data.result
-              }
-          });
-          
-          fetch("/api/alerts")
-            .then(r => r.json())
-            .then(j => {
-                if (j.status === "success"){
-                    this.$data.alerts = j.data.result
-                }
-          });
-        },
-        isCurrent(value) {
-          const now = luxon.DateTime.local();
-          const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
-          const diff = past.diff(now, 'minutes');
-          return Math.abs(diff.minutes) < 5;
-        },
-      },
-      watch: {
-        search(value){
-          this.filterSpaces(this.spaces, value);
-        },
-        deployments(value) {
-          this.updateModel();
-        },
-        alerts(value){
-          this.updateModel();
-        }
-      },
-      async mounted () {
-        this.fetchData();
+let destroy = () => {
+  clearInterval(timer.value)
+}
 
-        this.timer = setInterval(this.fetchData, 10000);
-      },
-      destroy() {
-        clearInterval(this.timer)
-      },
-      setup
-    };
+components["live"] = { template: "#live", setup, destroy };
     
 routes.push({path:'/live', name:"live", component: components["live"]});
 </script>
