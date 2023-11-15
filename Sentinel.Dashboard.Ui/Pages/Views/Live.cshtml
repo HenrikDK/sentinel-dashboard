@@ -50,7 +50,7 @@
         
         <template v-if="Object.keys(this.repositories).length > 0">
           <template v-if="showHeader() && activity.alerts.length > 0">
-            <div class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+            <div class="sticky left-0 bg-red-600 text-white font-bold text-sm pl-4 items-center w-64">
               Alerts
             </div>
           </template>
@@ -61,7 +61,7 @@
         </template>
         
         <template v-if="showHeader() && activity.warnings.length > 0">
-          <td class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+          <td class="sticky left-0 bg-orange-500 text-white font-bold text-sm pl-4 items-center w-64">
             Missing Metrics
           </td>
         </template>
@@ -71,7 +71,7 @@
         </template>
         
         <template v-if="showHeader() && activity.deploying.length > 0">
-          <div class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+          <div class="sticky left-0 bg-green-600 text-white font-bold text-sm pl-4 items-center w-64">
             Deploying
           </div>
         </template>
