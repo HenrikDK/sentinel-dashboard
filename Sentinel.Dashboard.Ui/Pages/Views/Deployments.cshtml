@@ -25,14 +25,14 @@
         <div class="bg-white rounded shadow-md my-4 border border-solid border-gray-300 w-fit"
              aria-label="Spaces">
          
-          <div class="bg-gray-200 py-2 h-8 flex rounded-t border-solid border-gray-300 items-center"
+          <div class="bg-gray-200 h-8 flex rounded-t border-solid border-gray-300"
                aria-label="Space header">
             <div class="w-64">
               <tooltip placement="right">
                 <template v-slot:cell>
-                  <div class="ml-2 font-bold text-gray-600 p-0.5 rounded border border-gray-200 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+                  <div class="ml-1 font-bold text-gray-600 p-0.5 rounded border border-gray-200 truncate max-w-[15rem] hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
                     <router-link :to="{ name: 'deployments-namespace', params: { env: ns.namespace, space: ns.space }, query: $route.query }">
-                      Namespace: {{ ns.namespace?.toUpperCase() }}
+                      {{ ns.namespace?.toUpperCase() }}
                     </router-link>
                   </div>
                 </template>
@@ -46,18 +46,18 @@
             <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
               <template v-if="ns.environments.includes(e)">
                 <div v-if="e != 'prd'"
-                     class="pl-3 flex w-60 text-gray-500">
+                     class="pl-3 flex w-56 text-gray-500">
                   {{ e.toUpperCase() }}
                 </div>
-                <div v-else class="pl-3 flex w-60 justify-between items-center">
+                <div v-else class="pl-3 flex w-56 justify-between items-center">
                   <div class="text-gray-500">
                     {{ e.toUpperCase() }}
                   </div>
                   <tooltip placement="left">
                     <template v-slot:cell>
-                      <div class="mr-2 font-bold text-gray-600 p-0.5 rounded border border-gray-200 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+                      <div class="mr-1 font-bold text-gray-600 p-0.5 rounded border border-gray-200 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
                         <router-link :to="{ name: 'deployments-space', params: { space: ns.space }, query: $route.query }">
-                          Space: {{ ns.space?.toUpperCase() }}
+                           {{ ns.space?.toUpperCase() }}
                         </router-link>
                       </div>
                     </template>
