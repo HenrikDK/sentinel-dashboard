@@ -1,4 +1,4 @@
-<template id="live">
+﻿<template id="live">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start">
 
     <template v-if="spaces.length > 0">
@@ -261,6 +261,3 @@ components["live"] = { template: "#live", setup, destroy };
     
 routes.push({path:'/live', name:"live", component: components["live"]});
 </script>
-
-<style>
-</style>
