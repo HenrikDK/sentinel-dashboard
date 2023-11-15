@@ -1,4 +1,4 @@
-<template id="deployments">
+﻿<template id="deployments">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start relative">
     
     <template v-if="!search && spaces.length > 0">
@@ -278,6 +278,3 @@ routes.push({path:'/spaces/:space/environments/:env/deployments', name:"deployme
 routes.push({path:'/spaces/:space/deployments', name:"deployments-space", component: components["deployments"]});
 routes.push({path:'/', name:"deployments", component: components["deployments"]});
 </script>
-
-<style>
-</style>
