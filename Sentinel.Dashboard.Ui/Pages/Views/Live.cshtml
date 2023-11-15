@@ -32,10 +32,10 @@
 
           <template v-for="e in ns.environments">
             <div v-if="e != 'prd'"
-                 class="pl-3 flex w-60 text-gray-500">
+                 class="pl-3 flex w-56 text-gray-500">
               {{ e.toUpperCase() }}
             </div>
-            <div v-else class="pl-3 flex w-60 justify-between items-center">
+            <div v-else class="pl-3 flex w-56 justify-between items-center">
               <div class="text-gray-500">
                 {{ e.toUpperCase() }}
               </div>
