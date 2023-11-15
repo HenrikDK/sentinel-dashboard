@@ -131,7 +131,17 @@ let setup = () => {
     return link;
   }
   
-  return { getSkoonerLink }
+  let getCleanName = (repo) => {
+    let name = repo.name.split('/')[1];
+    if (name.startsWith(repo.namespace)){
+      name = name.substring(repo.namespace.length);
+    }
+    if (name.startsWith('-') || name.startsWith('.') || name.startsWith('_')){
+      name = name.substring(1);
+    }
+    
+    return name
+  }
 }
 
 components["deployment-bar"] = { template: "#deployment-bar", props: ['expanded', 'repository', 'ns', 'live'], setup};
