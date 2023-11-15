@@ -188,12 +188,17 @@ let setup = (props, ctx) => {
       
       results[repository.name] = repository;
     })
+
+    let gRepositories = Object.entries(results).map(r => r[1]);
+    let combinations = gRepositories.map(x => ({ 'namespace': x.namespace, 'space': x.space}));
+    combinations = [...new Map(combinations.map(x => [x['namespace'], x])).values()];
+    let spacesList = Array.from(new Set(combinations));
+    spacesList = sortByKey(spacesList, 'namespace');
     
     let alarms = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
     alarms = Array.from(new Set(alarms));
     activity.value.alerts = alarms;
     
-    let gRepositories = Object.entries(results).map(r => r[1]);
     let warnings = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
     warnings = warnings.filter(x => !alarms.includes(x));
     activity.value.warnings = warnings;
@@ -204,6 +209,7 @@ let setup = (props, ctx) => {
     activity.value.deploying = deploying;
     
     repositories.value = results;
+    spaces.value = spacesList;
     loading.value = false;
   }
   
@@ -241,7 +247,7 @@ let setup = (props, ctx) => {
   })
     
   return {
-    ns, activity, loading, repositories, expanded, alerts, deployments,
+    ns, activity, loading, repositories, expanded, alerts, deployments, spaces,
     showHeader, toggleDetails, isCurrent, updateModel, fetchData
   }
 }
