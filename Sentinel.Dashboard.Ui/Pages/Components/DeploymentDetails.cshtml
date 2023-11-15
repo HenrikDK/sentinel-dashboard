@@ -1,9 +1,9 @@
 <template id="deployment-details">
   <div class="self-center hover:bg-gray-100 w-64 items-center text-sm">
-    <div v-if="deployment.alerts.length > 0 || !deployment.metrics" class="font-bold">
-        Alerts:
-        <div v-for="a in deployment.alerts" class="pl-3 text-red-600">{{ a.metric.alertname }}</div>
-        <div v-if="!deployment.metrics" class="pl-3 text-orange-500 font-bold">No data from metrics endpoint! Is the app running?</div>
+    <div v-if="deployment.alerts.length > 0" class="font-bold pb-2">
+      Alerts:
+      <div v-for="a in getDistinctAlerts(deployment.alerts)" class="text-red-600 truncate">{{ a }}</div>
+    </div>
     </div>
     <div>
         Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
@@ -28,7 +28,13 @@ let setup = () => {
     return past.toRelativeCalendar({locale: "en"});
   }
   
-  return { toRelative }
+  let getDistinctAlerts = (value) => {
+    let alerts = value.map(x => x.metric?.alertname);
+    let result = [... new Set(alerts)];
+    return result;
+  }
+  
+  return { toRelative, getDistinctAlerts }
 }
 
 components["deployment-details"] = { template: "#deployment-details", props: ['deployment'], setup};
