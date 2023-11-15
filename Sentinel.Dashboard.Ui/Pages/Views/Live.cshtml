@@ -1,6 +1,25 @@
 ﻿<template id="live">
   <div class="flex flex-col w-fit mx-auto max-w-screen-2xl justify-start">
 
+    <template v-if="spaces.length > 0">
+      <div class="mt-4 mb-2">Filters: </div>
+      <div class="w-full flex flex-wrap mb-4">
+        <router-link :to="{ name: 'live', query: $route.query }">
+          <div class="rounded mx-1 p-1 border border-gray-300 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+            Live Changes
+          </div>
+        </router-link>
+        
+        <template v-for="ns in spaces">
+          <router-link :to="{ name: 'deployments-namespace', params: { env: ns.namespace, space: ns.space }, query: $route.query }">
+            <div class="rounded mx-1 p-1 border border-gray-300 hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
+              {{ ns.namespace?.toUpperCase() }}
+            </div>
+          </router-link>
+        </template>
+      </div>
+    </template>
+    
     <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid max-w-screen-2xl border-gray-300 w-full"
          aria-label="Spaces">
       <div class="overflow-auto w-fit">
@@ -13,10 +32,10 @@
 
           <template v-for="e in ns.environments">
             <div v-if="e != 'prd'"
-                 class="pl-3 flex w-60 text-gray-500">
+                 class="pl-3 flex w-56 text-gray-500">
               {{ e.toUpperCase() }}
             </div>
-            <div v-else class="pl-3 flex w-60 justify-between items-center">
+            <div v-else class="pl-3 flex w-56 justify-between items-center">
               <div class="text-gray-500">
                 {{ e.toUpperCase() }}
               </div>
@@ -31,7 +50,7 @@
         
         <template v-if="Object.keys(this.repositories).length > 0">
           <template v-if="showHeader() && activity.alerts.length > 0">
-            <div class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+            <div class="sticky left-0 bg-red-600 text-white font-bold text-sm pl-4 items-center w-64">
               Alerts
             </div>
           </template>
@@ -42,7 +61,7 @@
         </template>
         
         <template v-if="showHeader() && activity.warnings.length > 0">
-          <td class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+          <td class="sticky left-0 bg-orange-500 text-white font-bold text-sm pl-4 items-center w-64">
             Missing Metrics
           </td>
         </template>
@@ -52,7 +71,7 @@
         </template>
         
         <template v-if="showHeader() && activity.deploying.length > 0">
-          <div class="sticky left-0 bg-gray-200 text-sm pl-4 items-center w-64">
+          <div class="sticky left-0 bg-green-600 text-white font-bold text-sm pl-4 items-center w-64">
             Deploying
           </div>
         </template>
@@ -79,6 +98,7 @@ let setup = (props, ctx) => {
   });
   const loading = ref(true);
   const timer = ref('')
+  const spaces = ref([]);
   const repositories = ref([]);
   const expanded = ref({});
   const alerts = ref([]);
@@ -169,12 +189,17 @@ let setup = (props, ctx) => {
       
       results[repository.name] = repository;
     })
+
+    let gRepositories = Object.entries(results).map(r => r[1]);
+    let combinations = gRepositories.map(x => ({ 'namespace': x.namespace, 'space': x.space}));
+    combinations = [...new Map(combinations.map(x => [x['namespace'], x])).values()];
+    let spacesList = Array.from(new Set(combinations));
+    spacesList = sortByKey(spacesList, 'namespace');
     
     let alarms = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
     alarms = Array.from(new Set(alarms));
     activity.value.alerts = alarms;
     
-    let gRepositories = Object.entries(results).map(r => r[1]);
     let warnings = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
     warnings = warnings.filter(x => !alarms.includes(x));
     activity.value.warnings = warnings;
@@ -185,6 +210,7 @@ let setup = (props, ctx) => {
     activity.value.deploying = deploying;
     
     repositories.value = results;
+    spaces.value = spacesList;
     loading.value = false;
   }
   
@@ -222,7 +248,7 @@ let setup = (props, ctx) => {
   })
     
   return {
-    ns, activity, loading, repositories, expanded, alerts, deployments,
+    ns, activity, loading, repositories, expanded, alerts, deployments, spaces,
     showHeader, toggleDetails, isCurrent, updateModel, fetchData
   }
 }
@@ -235,6 +261,3 @@ components["live"] = { template: "#live", setup, destroy };
     
 routes.push({path:'/live', name:"live", component: components["live"]});
 </script>
-
-<style>
-</style>

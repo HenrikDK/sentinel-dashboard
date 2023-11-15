@@ -4,9 +4,9 @@
       <!-- header -->
       <div v-if="expanded[repository.name]" class="bg-white h-6 items-center flex">
         <div class="w-64 overflow-hidden">
-          <div v-if="expanded[repository.name]" class="pl-4 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
-            <div>
-              <a :href="'https://github.com/' + repository.name" target="_blank">{{ repository.name.split('/')[1] }}</a>
+          <div v-if="expanded[repository.name]" class="pl-2 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
+            <div class="w-60 truncate">
+              <a :href="'https://github.com/' + repository.name" target="_blank">{{ getCleanName(repository) }}</a>
             </div>
             <div class="font-bold text-gray-600 hover:text-gray-900 top-0 right-0 cursor-pointer" @@click="$emit('toggle-details', repository.name)">
               <template v-if="!expanded[repository.name]">
@@ -24,7 +24,7 @@
         </div>
         <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
           <div v-if="ns.environments.includes(e)"
-               class="pl-3 w-60">
+               class="pl-3 w-56">
             <div class="flex justify-between">
               <div class="uppercase text-gray-500 hover:text-gray-900 hover:underline">
                 <a :href="'https://github.com/'+ repository.name + '/deployments/activity_log?environment=' + e" target="_blank">
@@ -40,11 +40,11 @@
       <div class="border-b border-solid border-gray-300 py-0.5">
         <template v-if="!expanded[repository.name]">
           <div class="flex">
-            <div class="sticky left-0 bg-white pl-4 flex items-center w-64">
+            <div class="sticky left-0 bg-white pl-2 flex items-center w-64">
               <div class="pb-2 text-gray-500 hover:underline hover:text-gray-900 w-60 truncate whitespace-nowrap">
-                <a :href="'https://github.com/' + repository.name" target="_blank">{{ repository.name.split('/')[1] }}</a>
+                <a :href="'https://github.com/' + repository.name" target="_blank">{{ getCleanName(repository) }}</a>
               </div>
-              <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute pt-1 top-0 right-0" @@click="$emit('toggle-details', repository.name)">
+              <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute top-0 right-0" @@click="$emit('toggle-details', repository.name)">
                 <template v-if="!expanded[repository.name]">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
@@ -60,7 +60,7 @@
             <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
               <div v-if="repository.environments.includes(e)">
                 <template v-if="repository.summary[e].instance?.metric">
-                  <a v-if="repository.workloads.length == 1" :href="getSkoonerLink(repository.summary[e]?.instance.metric)" class="flex items-center" target="_blank">
+                  <a v-if="repository.workloads.length == 1" :href="getPodPortalLink(repository.summary[e]?.instance.metric)" class="flex items-center" target="_blank">
                     <tooltip>
                       <template v-slot:cell>
                         <deployment-badge :deployment="repository.summary[e]"></deployment-badge>  
@@ -84,7 +84,7 @@
                 </template>
               </div>
               <div v-else-if="ns.environments.includes(e)">
-                <div class="w-60"></div>
+                <div class="w-56"></div>
               </div>
             </template>
           </div>
@@ -92,14 +92,14 @@
         <template v-else>
           <div v-for="deployment in repository.workloads" class="flex">
             <div class="sticky left-0 bg-white pl-4 flex items-center w-64">
-              <div class="whitespace-nowrap truncate w-60 font-bold text-gray-500">
+              <div class="whitespace-nowrap truncate w-56 font-bold text-gray-500">
                 {{ deployment.name }}
               </div>
             </div>
             <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
-              <div v-if="repository.environments.includes(e)">
+              <div v-if="repository.environments.includes(e) && deployment[e]?.instance">
                 <template v-if="deployment[e]">
-                  <a :href="getSkoonerLink(deployment[e].instance?.metric)" class="flex items-center" target="_blank">
+                  <a :href="getPodPortalLink(deployment[e].instance?.metric)" class="flex items-center" target="_blank">
                     <tooltip v-if="deployment[e].alerts.length > 0 || !deployment[e].metrics">
                       <template v-slot:cell>
                         <deployment-badge :deployment="deployment[e]"></deployment-badge>
@@ -113,7 +113,7 @@
                 </template>
               </div>
               <div v-else-if="ns.environments.includes(e)">
-                <div class="w-60"></div>
+                <div class="w-56"></div>
               </div>
             </template>
           </div>
@@ -125,13 +125,27 @@
 
 <script type="module">
 let setup = () => {
-  let getSkoonerLink = (value) => {
+  let getPodPortalLink = (value) => {
+    if (!value?.aks_environment) return "#";
+    
     let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
     let link = 'https://skooner.' + env + '.' + value.aks_space + '.azure.dsb.dk/#!pod/' + value.namespace + '/' + value.pod
     return link;
   }
   
-  return { getSkoonerLink }
+  let getCleanName = (repo) => {
+    let name = repo.name.split('/')[1];
+    if (name.startsWith(repo.namespace)){
+      name = name.substring(repo.namespace.length);
+    }
+    if (name.startsWith('-') || name.startsWith('.') || name.startsWith('_')){
+      name = name.substring(1);
+    }
+    
+    return name
+  }
+  
+  return { getPodPortalLink, getCleanName }
 }
 
 components["deployment-bar"] = { template: "#deployment-bar", props: ['expanded', 'repository', 'ns', 'live'], setup};

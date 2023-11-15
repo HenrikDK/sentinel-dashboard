@@ -1,5 +1,5 @@
 <template id="deployment-badge">
-  <div class="self-center hover:bg-gray-100 w-60 flex items-center">
+  <div class="self-center hover:bg-gray-100 w-56 flex items-center">
     <div class="pl-2">
       <template v-if="deployment.metrics && deployment.alerts.length === 0">
         <div class="flex bg-green-600 w-10 h-10 my-1 items-center justify-center text-white"
@@ -29,12 +29,12 @@
     </div>
 
     <div class="pl-2 py-1">
-      <div class="text-sm w-44 truncate font-bold">{{ deployment.instance.metric.aks_version }}</div>
+      <div class="text-sm w-40 font-bold">{{ shortVersion(deployment.instance.metric.aks_version) }}</div>
       <div class="text-xs text-gray-500"
            :class="[isCurrent(deployment.instance.metric.aks_deployed) ? 'font-bold' : '']">
         {{ toDateString(deployment.instance.metric.aks_deployed) }}
       </div>
-      <div class="text-xs w-40 truncate text-gray-500">{{ deployment.instance.metric.github_branch }}</div>
+      <div class="text-xs w-40 truncate font-bold text-gray-500">{{ deployment.instance.metric.github_branch }}</div>
     </div>
   </div>
 </template>
@@ -55,6 +55,11 @@ let setup = () => {
     return past.toFormat('y-LL-dd HH:mm')
   }
   
+  let shortVersion = (value) => {
+    if (!value) return '';
+    return value.substring(0, value.lastIndexOf('-'));    
+  }
+  
   let isCurrent = (value) => {
     const now = luxon.DateTime.local();
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
@@ -62,7 +67,7 @@ let setup = () => {
     return Math.abs(diff.minutes) < 5;
   }
   
-  return { toDateString, isCurrent }
+  return { toDateString, isCurrent, shortVersion }
 }
 
 components["deployment-badge"] = { template: "#deployment-badge", props: ['deployment'], setup };

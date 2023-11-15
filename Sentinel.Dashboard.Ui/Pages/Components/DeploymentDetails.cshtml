@@ -1,22 +1,30 @@
 <template id="deployment-details">
   <div class="self-center hover:bg-gray-100 w-64 items-center text-sm">
-    <div v-if="deployment.alerts.length > 0 || !deployment.metrics" class="font-bold">
-        Alerts:
-        <div v-for="a in deployment.alerts" class="pl-3 text-red-600">{{ a.metric.alertname }}</div>
-        <div v-if="!deployment.metrics" class="pl-3 text-orange-500 font-bold">No data from metrics endpoint! Is the app running?</div>
+    <div v-if="deployment.alerts.length > 0" class="font-bold pb-2">
+      Alerts:
+      <div v-for="a in getDistinctAlerts(deployment.alerts)" class="text-red-600 truncate">{{ a }}</div>
+    </div>
+    <div v-if="!deployment.metrics" class="text-orange-500 font-bold pb-2">
+      No data from metrics endpoint! Is the app running?
     </div>
     <div>
-        Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
-        by <span class="font-bold"> {{ deployment.instance.metric.github_user}} </span>
+      Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
+      by <span class="font-bold"> {{ deployment.instance.metric.github_user}} </span>
     </div>
     <div v-if="deployment.instance.metric.aks_systemid != 'no'">
-        System Id: <span class="font-bold">{{ deployment.instance.metric.aks_systemid }}</span>
+      System Id: <span class="font-bold">{{ deployment.instance.metric.aks_systemid }}</span>
     </div>
     <div>
-        Branch: <span class="font-bold">{{ deployment.instance.metric.github_branch }}</span>
+      Branch: <span class="font-bold w-44 truncate">{{ deployment.instance.metric.github_branch }}</span>
     </div>
     <div>
-        Metrics: <span class="font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</span>
+      Version <span class="font-bold">{{ deployment.instance.metric.aks_version }}</span>
+    </div>
+    <div>
+      Metrics: <span class="font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</span>
+    </div>
+    <div>
+      NS: <span class="font-bold">{{ deployment.instance.metric?.namespace?.split('-')[0] }}</span>
     </div>
   </div>
 </template>
@@ -28,7 +36,13 @@ let setup = () => {
     return past.toRelativeCalendar({locale: "en"});
   }
   
-  return { toRelative }
+  let getDistinctAlerts = (value) => {
+    let alerts = value.map(x => x.metric?.alertname);
+    let result = [... new Set(alerts)];
+    return result;
+  }
+  
+  return { toRelative, getDistinctAlerts }
 }
 
 components["deployment-details"] = { template: "#deployment-details", props: ['deployment'], setup};
