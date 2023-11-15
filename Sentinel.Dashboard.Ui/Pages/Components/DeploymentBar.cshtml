@@ -42,7 +42,7 @@
           <div class="flex">
             <div class="sticky left-0 bg-white pl-4 flex items-center w-64">
               <div class="pb-2 text-gray-500 hover:underline hover:text-gray-900 w-60 truncate whitespace-nowrap">
-                <a :href="'https://github.com/' + repository.name" target="_blank">{{ repository.name.split('/')[1] }}</a>
+                <a :href="'https://github.com/' + repository.name" target="_blank">{{ getCleanName(repository) }}</a>
               </div>
               <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute pt-1 top-0 right-0" @@click="$emit('toggle-details', repository.name)">
                 <template v-if="!expanded[repository.name]">
@@ -60,7 +60,7 @@
             <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
               <div v-if="repository.environments.includes(e)">
                 <template v-if="repository.summary[e].instance?.metric">
-                  <a v-if="repository.workloads.length == 1" :href="getSkoonerLink(repository.summary[e]?.instance.metric)" class="flex items-center" target="_blank">
+                  <a v-if="repository.workloads.length == 1" :href="getPodPortalLink(repository.summary[e]?.instance.metric)" class="flex items-center" target="_blank">
                     <tooltip>
                       <template v-slot:cell>
                         <deployment-badge :deployment="repository.summary[e]"></deployment-badge>  
@@ -125,7 +125,9 @@
 
 <script type="module">
 let setup = () => {
-  let getSkoonerLink = (value) => {
+  let getPodPortalLink = (value) => {
+    if (!value?.aks_environment) return "#";
+    
     let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
     let link = 'https://skooner.' + env + '.' + value.aks_space + '.azure.dsb.dk/#!pod/' + value.namespace + '/' + value.pod
     return link;
@@ -142,6 +144,8 @@ let setup = () => {
     
     return name
   }
+  
+  return { getPodPortalLink, getCleanName }
 }
 
 components["deployment-bar"] = { template: "#deployment-bar", props: ['expanded', 'repository', 'ns', 'live'], setup};
