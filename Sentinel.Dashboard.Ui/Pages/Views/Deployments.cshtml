@@ -178,7 +178,8 @@ let setup = (props, ctx) => {
             metrics = false;
           }
           
-          let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
+          let relevant = instances.filter(i => i.metric.aks_environment === e);
+          let most_recent = relevant.sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
           
           result[e] = {
             'instance': most_recent,
