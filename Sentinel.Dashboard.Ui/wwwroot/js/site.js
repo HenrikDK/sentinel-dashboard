@@ -26,6 +26,15 @@
     return output
 }
 
+function sortByKey(array, key) {
+    if (array.length == 0) return [];
+    
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
 function overviewChartFormatter(params) {
     output = '<div>' + params[0].name
     events = params.reduce((a, b) => +a + +b.value, 0)
