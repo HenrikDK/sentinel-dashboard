@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
 WORKDIR /app
 
 # Copy everything and build
@@ -6,7 +6,7 @@ COPY . ./
 RUN dotnet publish -c Release  -o out
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 RUN apk add --no-cache icu-libs
 RUN apk add --no-cache tzdata
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
