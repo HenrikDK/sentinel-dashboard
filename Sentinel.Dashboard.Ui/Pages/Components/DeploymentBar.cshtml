@@ -91,7 +91,7 @@
         <template v-else>
           <div v-for="deployment in repository.workloads" class="flex">
             <div class="sticky left-0 bg-white pl-4 flex items-center w-64">
-              <div class="whitespace-nowrap truncate w-56 font-bold text-gray-500">
+              <div class="whitespace-nowrap truncate w-56 font-bold text-gray-500" :title="deployment.name">
                 {{ deployment.name }}
               </div>
             </div>
