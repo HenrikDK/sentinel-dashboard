@@ -42,7 +42,7 @@
           <div class="flex">
             <div class="sticky left-0 bg-white pl-2 flex items-center w-64">
               <div class="pb-2 text-gray-500 hover:underline hover:text-gray-900 w-60 truncate whitespace-nowrap">
-                <a :href="'https://github.com/' + repository.name" target="_blank">{{ getCleanName(repository) }}</a>
+                <a :href="'https://github.com/' + repository.name" target="_blank" :title="getCleanName(repository)">{{ getCleanName(repository) }}</a>
               </div>
               <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute top-0 right-0" @@click="$emit('toggle-details', repository.name)">
                 <template v-if="!expanded[repository.name]">
