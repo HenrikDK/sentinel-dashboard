@@ -9,22 +9,43 @@
     </div>
     <div>
       Deployed <span class="font-bold">{{ toRelative(deployment.instance.metric.aks_deployed) }}</span>
-      by <span class="font-bold"> {{ deployment.instance.metric.github_user}} </span>
     </div>
-    <div v-if="deployment.instance.metric.aks_systemid != 'no'">
-      System Id: <span class="font-bold">{{ deployment.instance.metric.aks_systemid }}</span>
+    <div class="flex">
+      <div>User:</div>
+      <div class="ps-1 font-bold" v-if="deployment.instance.metric.org_user"> {{ deployment.instance.metric.github_user}} ({{ deployment.instance.metric.org_user?.replace('-at-dsb.dk', '') }}) </div>
+      <div class="ps-1 font-bold" v-else> {{ deployment.instance.metric.github_user}}</div>
     </div>
-    <div>
-      Branch: <span class="font-bold w-44 truncate">{{ deployment.instance.metric.github_branch }}</span>
+    <div class="flex" v-if="deployment.instance.metric.org_system && deployment.instance.metric.org_system != 'none'">
+      <div>System Id:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric.org_system }}</div>
     </div>
-    <div>
-      Version <span class="font-bold">{{ deployment.instance.metric.aks_version }}</span>
+    <div class="flex" v-if="deployment.instance.metric.org_team && deployment.instance.metric.org_team != 'none'">
+      <div>Team:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric.org_team }}</div>
     </div>
-    <div>
-      Metrics: <span class="font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</span>
+    <div class="flex" v-if="deployment.instance.metric.org_responsible && deployment.instance.metric.org_responsible != 'none'">
+      <div>Responsible:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric.org_responsible?.replace('-at-', '@@') }}</div>
     </div>
-    <div>
-      NS: <span class="font-bold">{{ deployment.instance.metric?.namespace?.split('-')[0] }}</span>
+    <div class="flex" v-if="deployment.instance.metric.org_contact && deployment.instance.metric.org_contact != 'none'">
+      <div>Contact:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric.org_contact?.replace('-at-', '@@') }}</div>
+    </div>
+    <div class="flex">
+      <div>Branch:</div>
+      <div class="ps-1 font-bold w-52 truncate">{{ deployment.instance.metric.github_branch }}</div>
+    </div>
+    <div class="flex">
+      <div>Version:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric.aks_version }}</div>
+    </div>
+    <div class="flex">
+      <div>Metrics:</div>
+      <div class="ps-1 font-bold">{{ deployment.metrics ? 'Yes' : 'No' }}</div>
+    </div>
+    <div class="flex">
+      <div>NS:</div>
+      <div class="ps-1 font-bold">{{ deployment.instance.metric?.namespace?.split('-')[0] }}</div>
     </div>
   </div>
 </template>
