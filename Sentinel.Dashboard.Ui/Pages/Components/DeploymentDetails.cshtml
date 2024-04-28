@@ -54,7 +54,7 @@
 let setup = () => {
   let toRelative = (value) => {
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
-    return past.toRelativeCalendar({locale: "en"});
+    return past.toRelativeCalendar({locale: "en", unit:"days"});
   }
   
   let getDistinctAlerts = (value) => {
