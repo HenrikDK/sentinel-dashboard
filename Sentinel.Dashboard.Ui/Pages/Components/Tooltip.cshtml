@@ -1,12 +1,11 @@
 <template id="tooltip">
-  <div ref="anchor" :class="padding" @@mouseenter="enter" @@mouseleave="hide">
+  <div ref="anchor" :class="padding" @@mouseenter="enter">
     <slot name="cell"/>
   </div>
 
-  <div v-if="visible" ref="floating" :style="floatingStyles" role="tooltip"
+  <div v-if="visible" ref="floating" :style="floatingStyles" role="tooltip" @@mouseleave="leave"
        class="items-center rounded-md shadow-lg p-2 
-            text-black bg-gray-100 z-50
-            dark:text-gray-200 dark:bg-zinc-800">
+            text-black bg-gray-100 z-50">
     <transition
       enter-from-class="opacity-0"
       leave-to-class="opacity-0"
@@ -30,17 +29,22 @@ let setup = (props, ctx) =>{
   const anchor = ref(null);
   const floating = ref(null);
   const visible = ref(false);
-  const timer = ref({});
   const offsetAmount = 8;
 
+  let leave = async (e) => {
+      setTimeout(() => hide(e), 150);
+  }
+
   let hide = async (e) => {
+    if (anchor.value.matches(':hover') || floating.value?.matches(':hover')) return;
+
     visible.value = false;
     
-    anchor.value.removeEventListener('mouseleave', hide);
+    anchor.value.removeEventListener('mouseleave', leave);
   }
 
   let enter = async (e) => {
-      timer.value = setTimeout(() => show(e), 500);
+      setTimeout(() => show(e), 500);
   }
   
   let show = (e) => {
@@ -50,7 +54,7 @@ let setup = (props, ctx) =>{
       
       visible.value = true
       
-      anchor.value.addEventListener('mouseleave', hide);                  
+      anchor.value.addEventListener('mouseleave', leave);                  
   }
   
   const middleware = ref([
@@ -72,7 +76,7 @@ let setup = (props, ctx) =>{
     left: `${x.value ?? 0}px`
   }));
   
-  return {visible, anchor, floating, timer, enter, show, hide, floatingStyles}
+  return {visible, anchor, floating, enter, show, leave, hide, floatingStyles}
 }
 
 components["tooltip"] = { template: "#tooltip",
