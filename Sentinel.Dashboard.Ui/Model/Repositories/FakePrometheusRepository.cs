@@ -118,17 +118,22 @@ public class FakePrometheusRepository : IPrometheusRepository
             {
                 var w = GetWorkload(ns, e, n.rep, n.name, n.type);
                 workloads.Add(w);
+                if (n.name == "database-replication" && e == "tst")
+                {
+                    var w2 = GetWorkload(ns, e, n.rep, n.name, n.type, true);
+                    workloads.Add(w2);
+                }
             }));
         }
 
         return workloads;
     }
     
-    private JsonObject GetWorkload(string ns, string env, string repo, string name, string type)
+    private JsonObject GetWorkload(string ns, string env, string repo, string name, string type, bool deploying = false)
     {
         var metrics = name == "example" && type == "worker" ? "0" : "1";
         var deployed = DateTimeOffset.Now.AddDays(-Random.Shared.Next(1, 7)).ToUnixTimeSeconds();
-        if (name == "database-replication")
+        if (deploying)
         {
             deployed = DateTimeOffset.Now.AddMinutes(-Random.Shared.Next(1, 3)).ToUnixTimeSeconds();
         }
