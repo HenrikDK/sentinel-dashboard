@@ -6,7 +6,7 @@
         <div class="w-64 overflow-hidden">
           <div v-if="expanded[repository.name]" class="pl-2 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
             <div class="w-60 truncate">
-              <a :href="'https://github.com/' + repository.name" target="_blank">{{ getCleanName(repository) }}</a>
+              <a :href="'https://github.com/' + repository.name" target="_blank" :title="getCleanName(repository)">{{ getCleanName(repository) }}</a>
             </div>
             <div class="font-bold text-gray-600 hover:text-gray-900 top-0 right-0 cursor-pointer" @@click="$emit('toggle-details', repository.name)">
               <template v-if="!expanded[repository.name]">
