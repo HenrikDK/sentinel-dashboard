@@ -48,6 +48,10 @@ public class IssuesRepository : IIssuesRepository
             .WithOAuthBearerToken(_token.Value)
             .WithHeader("Content-Type", "application/json")
             .WithHeader("Accept", "application/json")
+            .WithSettings(x => x.JsonSerializer = new DefaultJsonSerializer( new JsonSerializerOptions
+            {
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            }))
             .PostJsonAsync(new
             {
                 queryString = query,
@@ -59,7 +63,6 @@ public class IssuesRepository : IIssuesRepository
         result.ForEach(x => x.Id = $"{x.Service}{x.ExceptionType}{x.MessageTemplate}{x.SourceContext}".ToSha256Base36());
 
         var now = GetCurrentClientTime();
-
         result = result.Where(x => x.LastSeen > now.AddDays(-1)).ToList();
         
         return result;
