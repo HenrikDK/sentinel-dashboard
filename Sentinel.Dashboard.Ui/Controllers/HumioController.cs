@@ -1,7 +1,6 @@
-﻿using System.Web;
-using Sentinel.Dashboard.Ui.Model.Repositories;
+﻿using DSB.Sentinel.Dashboard.Ui.Model.Repositories;
 
-namespace Sentinel.Dashboard.Ui.Controllers;
+namespace DSB.Sentinel.Dashboard.Ui.Controllers;
 
 [ApiController]
 public class HumioController : ControllerBase
@@ -45,6 +44,20 @@ public class HumioController : ControllerBase
         
         return Redirect(url);
     }    
+
+    [HttpGet("humio/spaces/{space}/environments/{environment}/logs/{app}/events")]
+    public ActionResult GetIssueEventsQuery(string space, string environment, string app, [FromQuery] string timeSpan = "7days")
+    {
+        var start = timeSpan.Replace("hours", "h").Replace("days", "d");
+
+        var repository = _humioQueryRepository.GetRepository(space);
+        
+        var query = _humioQueryRepository.GetLogsQuery(environment, app);
+        
+        var url = $"https://cloud.humio.com/{repository}/search?query={HttpUtility.UrlEncode(query)}&start={start}&tz=Europe%2FCopenhagen";
+        
+        return Redirect(url);
+    }
     
     [HttpGet("humio/spaces/{space}/environments/{environment}/queries/{type}/issues/{issueId}/events")]
     public ActionResult GetIssueEventsQuery(string space, string environment, string type, string issueId, [FromQuery] string timeSpan = "24hours")
