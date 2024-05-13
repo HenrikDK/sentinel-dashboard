@@ -145,19 +145,24 @@ let setup = (props, ctx) => {
     Object.keys(grouped).sort().forEach(g => {
       let repository_pods = grouped[g];
       let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
-      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
-      let summary = {
-          'workloads': names,
-      }
-      
+      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();      
       let repository = {
-          'name': g,
+          'group_name': g,
+          'name': repository_pods[0].metric.github_repository,
+          'display_name': repository_pods[0].metric.github_repository,
           'matched': true,
           'space': repository_pods[0].metric.aks_space,
           'namespace': repository_pods[0].metric.namespace.split('-')[0],
           'environments': environments,
           'workloads': [],
-          'summary': summary
+          'summary': {}
+      }
+      
+      if (repository.display_name.startsWith(repository.namespace)){
+        repository.display_name = repository.display_name.substring(repository.namespace.length);
+      }
+      if (repository.display_name.startsWith('-') || repository.display_name.startsWith('.') || repository.display_name.startsWith('_')){
+        repository.display_name = repository.display_name.substring(1);
       }
       
       names.forEach(x => {
@@ -191,14 +196,14 @@ let setup = (props, ctx) => {
         repository.workloads.push(result)
       });
       
-      environments.forEach(e => {
-          let missing = repository.workloads.some(w => w[e].metrics === false);
-          summary[e] = {
-            'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
-            'metrics': !missing,
-            'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
-          }
-      })
+      repository.environments.forEach(e => {
+        let missing = repository.workloads.some(w => w[e].metrics === false);
+        repository.summary[e] = {
+          'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0],
+          'metrics': !missing,
+          'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+        }
+      });
       
       results.push(repository)
     })
