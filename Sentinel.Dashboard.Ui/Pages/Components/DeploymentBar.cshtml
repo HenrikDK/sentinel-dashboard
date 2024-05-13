@@ -117,10 +117,17 @@
             </div>
           </template>
           <template v-else>
-            <div v-for="environment in repository.sub_environments" class="shadow-inner">
-              <div class="pl-4 py-1 text-sm bg-sky-100">
+            <div v-for="environment in repository.sub_environments">
+              <div v-if="environment.strategy == 'branch'" class="pl-4 py-1 text-sm bg-green-100 text-gray-500">
                 {{environment.strategy}}: {{ environment.head_branch }}
               </div>
+              <div v-if="environment.strategy == 'preview'" class="pl-4 py-1 text-sm bg-sky-100 text-gray-500">
+                {{environment.strategy}}: {{ environment.head_branch }}
+              </div>
+              <div v-if="environment.strategy == 'default'" class="pl-4 py-1 text-sm bg-gray-100 text-gray-700">
+                {{ environment.head_branch }}
+              </div>
+
               <div v-for="deployment in environment.workloads" class="flex">
                 <div class="sticky left-0 pl-4 flex items-center w-64">
                   <div class="whitespace-nowrap truncate w-56 font-bold text-sm text-gray-500" :title="deployment.name">
