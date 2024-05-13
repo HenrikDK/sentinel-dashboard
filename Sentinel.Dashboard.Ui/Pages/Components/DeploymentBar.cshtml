@@ -88,32 +88,67 @@
           </div>
         </template>
         <template v-else>
-          <div v-for="deployment in repository.workloads" class="flex">
-            <div class="sticky left-0 bg-white pl-4 flex items-center w-64">
-              <div class="whitespace-nowrap truncate w-56 font-bold text-gray-500" :title="deployment.name">
-                {{ deployment.name }}
+          <template v-if="repository.strategy === 'default'">
+            <div v-for="deployment in repository.workloads" class="flex">
+              <div class="sticky left-0 pl-4 flex items-center w-64">
+                <div class="whitespace-nowrap truncate w-56 font-bold text-sm text-gray-500" :title="deployment.name">
+                  {{ deployment.name }}
+                </div>
               </div>
+              <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
+                <div v-if="repository.environments.includes(e) && deployment[e]?.instance">
+                  <template v-if="deployment[e]">
+                    <tooltip>
+                      <template v-slot:cell>
+                        <a :href="getPortalLink(deployment[e].instance?.metric)" class="flex items-center" target="_blank">
+                          <deployment-badge :deployment="deployment[e]"></deployment-badge>
+                        </a>
+                      </template>
+                      <template v-slot:tooltip>
+                        <deployment-details :deployment="deployment[e]" :workloads="repository.workloads" :links="true" ></deployment-details>
+                      </template>
+                    </tooltip>
+                  </template>
+                </div>
+                <div v-else-if="ns.environments.includes(e)">
+                  <div class="w-56"></div>
+                </div>
+              </template>
             </div>
-            <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
-              <div v-if="repository.environments.includes(e) && deployment[e]?.instance">
-                <template v-if="deployment[e]">
-                  <tooltip>
-                    <template v-slot:cell>
-                      <a :href="getPortalLink(deployment[e].instance?.metric)" class="flex items-center" target="_blank">
-                        <deployment-badge :deployment="deployment[e]"></deployment-badge>
-                      </a>
+          </template>
+          <template v-else>
+            <div v-for="environment in repository.sub_environments" class="shadow-inner">
+              <div class="pl-4 py-1 text-sm bg-sky-100">
+                {{environment.strategy}}: {{ environment.head_branch }}
+              </div>
+              <div v-for="deployment in environment.workloads" class="flex">
+                <div class="sticky left-0 pl-4 flex items-center w-64">
+                  <div class="whitespace-nowrap truncate w-56 font-bold text-sm text-gray-500" :title="deployment.name">
+                    {{ deployment.name }}
+                  </div>
+                </div>
+                <template v-for="e in ['sit', 'dev', 'tst', 'uat', 'prd']">
+                  <div v-if="repository.environments.includes(e) && deployment[e]?.instance">
+                    <template v-if="deployment[e]">
+                      <tooltip>
+                        <template v-slot:cell>
+                          <a :href="getPortalLink(deployment[e].instance?.metric)" class="flex items-center" target="_blank">
+                            <deployment-badge :deployment="deployment[e]"></deployment-badge>
+                          </a>
+                        </template>
+                        <template v-slot:tooltip>
+                          <deployment-details :deployment="deployment[e]" :workloads="repository.workloads" :links="true" ></deployment-details>
+                        </template>
+                      </tooltip>
                     </template>
-                    <template v-slot:tooltip>
-                      <deployment-details :deployment="deployment[e]" :workloads="repository.workloads" :links="true" ></deployment-details>
-                    </template>
-                  </tooltip>
+                  </div>
+                  <div v-else-if="ns.environments.includes(e)">
+                    <div class="w-56"></div>
+                  </div>
                 </template>
               </div>
-              <div v-else-if="ns.environments.includes(e)">
-                <div class="w-56"></div>
-              </div>
-            </template>
-          </div>
+            </div>
+          </template>
         </template>
       </div>
     </div>
