@@ -69,7 +69,7 @@
     </div>
     <div class="flex">
       <div>Branch:</div>
-      <div class="ps-1 font-bold w-52 truncate">{{ deployment.instance.metric.github_branch }}</div>
+      <div class="ps-1 font-bold w-52 truncate">{{ deployment.instance.metric.github_head_branch ?? deployment.instance.metric.github_branch }}</div>
     </div>
     <div class="flex">
       <div>Version:</div>

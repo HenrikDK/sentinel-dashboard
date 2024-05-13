@@ -34,7 +34,7 @@
            :class="[isCurrent(deployment.instance.metric.aks_deployed) ? 'font-bold' : '']">
         {{ toDateString(deployment.instance.metric.aks_deployed) }}
       </div>
-      <div class="text-xs w-40 truncate font-bold text-gray-500">{{ deployment.instance.metric.github_branch }}</div>
+      <div class="text-xs w-40 truncate font-bold text-gray-500">{{ deployment.instance.metric.github_head_branch ?? deployment.instance.metric.github_branch }}</div>
     </div>
   </div>
 </template>
