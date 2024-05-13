@@ -1,6 +1,6 @@
-﻿using DSB.Sentinel.Dashboard.Ui.Model.Repositories;
+﻿using Sentinel.Dashboard.Ui.Model.Repositories;
 
-namespace DSB.Sentinel.Dashboard.Ui.Controllers;
+namespace Sentinel.Dashboard.Ui.Controllers;
 
 [ApiController]
 public class HumioController : ControllerBase

@@ -7,6 +7,7 @@ public interface IHumioQueryRepository
     string GetOverviewChartQuery(string environment, string timeSpan, string eventType);
     string GetEventsQuery(string environment, Issue issue, string eventType);
     string GetMiniChartQuery(string environment, string timeSpan, Issue issue, string eventType);
+    string GetLogsQuery(string environment, string app);
 }
 
 public class HumioQueryRepository : IHumioQueryRepository
@@ -101,7 +102,16 @@ kubernetes.container.name = "{issue.Service}" |
         
         return query;
     }
-    
+
+    public string GetLogsQuery(string environment, string app)
+    {
+        var query = $"""
+kubernetes.namespace="{environment}" |
+kubernetes.pod.name="{app}-*"
+""";
+        return query;
+    }
+
     public string GetEventsQuery(string environment, Issue issue, string eventType)
     {
         var query = $"""
