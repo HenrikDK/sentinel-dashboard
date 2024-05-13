@@ -274,15 +274,18 @@ function groupWorkloadsByRepository(deployments, alerts){
       let repository_pods = grouped[g];
       let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
       let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name)));
+      let strategy = repository_pods.filter(s => s.metric.aks_strategy !== undefined)[0]?.metric.aks_strategy ?? 'default';
       let repository = {
           'group_name': g,
           'name': repository_pods[0].metric.github_repository,
           'display_name': repository_pods[0].metric.github_repository,
           'matched': true,
+          'strategy': strategy,
           'space': repository_pods[0].metric.aks_space,
           'namespace': repository_pods[0].metric.namespace.split('-')[0],
           'environments': environments,
           'workloads': [],
+          'sub_environments': [],
           'summary': {}
       }
       
@@ -297,8 +300,12 @@ function groupWorkloadsByRepository(deployments, alerts){
         let instances = repository_pods.filter(v => v.metric.aks_name === x)
         let alarms = alerts.filter(a => a.metric.aks_name === x )
         
+        let first = instances[0];
         let result = {
           'name': x,
+          'strategy': first.metric.aks_strategy ?? 'default',
+          'deployed': first.metric.aks_deployed ?? '0',
+          'head_branch': first.metric.github_head_branch ?? first.metric.github_branch,
           'instances': instances,
         }
         
@@ -336,6 +343,24 @@ function groupWorkloadsByRepository(deployments, alerts){
           'alerts': alerts.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
         }
       });
+
+      if (repository.strategy !== 'default'){
+        let subs_groups = Array.from(new Set(repository.workloads.map(w => w.head_branch)));
+
+        subs_groups.forEach(sg =>{
+            let sub_workloads = repository.workloads.filter(w => w.head_branch === sg);
+            let group = {
+                'deployed': sub_workloads[0].deployed,
+                'strategy': sub_workloads[0].strategy,
+                'head_branch': sg,
+                'workloads': sub_workloads
+            }
+            
+            repository.sub_environments.push(group);
+        })
+
+        repository.sub_environments.sort((a, b) => (a.deployed < b.deployed ? -1 : 1)).reverse();
+      }
       
       results.push(repository)
     })
