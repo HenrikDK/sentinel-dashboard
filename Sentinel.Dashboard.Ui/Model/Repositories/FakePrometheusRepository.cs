@@ -147,7 +147,7 @@ public class FakePrometheusRepository : IPrometheusRepository
                 {
                     var b1 = GetWorkload(ns, e, n.rep, n.name, n.type, strategy: "branch", head: "feature-fox-1234-important-changes-bla-bla");
                     workloads.Add(b1);
-                    var b2 = GetWorkload(ns, e, n.rep, n.name, n.type, strategy: "branch", head: "feature-fox-1235-other-changes-bla-bla");
+                    var b2 = GetWorkload(ns, e, n.rep, n.name, n.type, deploying: true, strategy: "branch", head: "feature-fox-1235-other-changes-bla-bla");
                     workloads.Add(b2);
                 }
                 
