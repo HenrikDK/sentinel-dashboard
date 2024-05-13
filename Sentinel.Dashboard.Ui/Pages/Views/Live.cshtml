@@ -56,7 +56,7 @@
           </template>
           
           <template v-for="a in activity.alerts">
-            <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[a]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+            <deployment-bar :expanded="expanded" :ns="ns" :repository="a" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
           </template>
         </template>
         
@@ -67,7 +67,7 @@
         </template>
         
         <template v-for="w in activity.warnings">
-          <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[w]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+          <deployment-bar :expanded="expanded" :ns="ns" :repository="w" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
         </template>
         
         <template v-if="showHeader() && activity.deploying.length > 0">
@@ -77,7 +77,7 @@
         </template>
         
         <template v-for="d in activity.deploying">
-          <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[d]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+          <deployment-bar :expanded="expanded" :ns="ns" :repository="d" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
         </template>
       </div>
     </div>
@@ -134,18 +134,23 @@ let setup = (props, ctx) => {
       let repository_pods = grouped[g];
       let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
       let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
-      let summary = {
-          'workloads': names,
+      let repository = {
+        'group_name': g,
+        'name': repository_pods[0].metric.github_repository,
+        'display_name': repository_pods[0].metric.github_repository,
+        'matched': true,
+        'space': repository_pods[0].metric.aks_space,
+        'namespace': repository_pods[0].metric.namespace.split('-')[0],
+        'environments': environments,
+        'workloads': [],
+        'summary': {}
       }
       
-      let repository = {
-          'name': g,
-          'matched': true,
-          'space': repository_pods[0].metric.aks_space,
-          'namespace': repository_pods[0].metric.namespace.split('-')[0],
-          'environments': environments,
-          'workloads': [],
-          'summary': summary
+      if (repository.display_name.startsWith(repository.namespace)){
+        repository.display_name = repository.display_name.substring(repository.namespace.length);
+      }
+      if (repository.display_name.startsWith('-') || repository.display_name.startsWith('.') || repository.display_name.startsWith('_')){
+        repository.display_name = repository.display_name.substring(1);
       }
       
       names.forEach(x => {
@@ -179,16 +184,16 @@ let setup = (props, ctx) => {
         repository.workloads.push(result)
       });
       
-      environments.forEach(e => {
-          let missing = repository.workloads.some(w => w[e].metrics === false);
-          summary[e] = {
-            'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
-            'metrics': !missing,
-            'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
-          }
-      })
+      repository.environments.forEach(e => {
+        let missing = repository.workloads.some(w => w[e].metrics === false);
+        repository.summary[e] = {
+          'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0],
+          'metrics': !missing,
+          'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+        }
+      });
       
-      results[repository.name] = repository;
+      results[repository.group_name] = repository;
     })
 
     let gRepositories = Object.entries(results).map(r => r[1]);
@@ -197,17 +202,20 @@ let setup = (props, ctx) => {
     let spacesList = Array.from(new Set(combinations));
     spacesList = sortByKey(spacesList, 'namespace');
     
-    let alarms = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-    alarms = Array.from(new Set(alarms));
+    let alarmNames = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository);
+    alarmNames = Array.from(new Set(alarmNames));
+    let alarms = alarmNames.map(x => results[x]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.alerts = alarms;
     
-    let warnings = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
-    warnings = warnings.filter(x => !alarms.includes(x));
+    let warningNames = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.group_name);
+    warningNames = warningNames.filter(x => !alarmNames.includes(x));
+    let warnings = warningNames.map(x => results[x]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.warnings = warnings;
     
-    let deploying = deployments.value.filter(x => isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-    deploying = Array.from(new Set(deploying));
-    deploying = deploying.filter(x => !alarms.includes(x) && !warnings.includes(x));
+    let deployingNames = deployments.value.filter(x => isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository);
+    deployingNames = Array.from(new Set(deployingNames));
+    deployingNames = deployingNames.filter(x => !alarmNames.includes(x) && !warningNames.includes(x));
+    let deploying = deployingNames.map(x => results[x]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.deploying = deploying;
     
     repositories.value = results;
