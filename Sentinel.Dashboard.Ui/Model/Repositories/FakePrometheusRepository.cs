@@ -17,7 +17,7 @@ public class FakePrometheusRepository : IPrometheusRepository
             }
         };
         
-        var ns = new[] { "project", "planning", "demo" };
+        var ns = new[] { "project", "planning", "demo", "sales" };
 
         var workloads = ns.SelectMany(GetWorkloads);
         
@@ -127,10 +127,42 @@ public class FakePrometheusRepository : IPrometheusRepository
             }));
         }
 
+        if (ns == "sales")
+        {
+            var envs = new[] { "prd", "dev" };
+            
+            var names = new[]
+            {
+                new { rep = "sales-order", name = "sales-order", type ="api" },
+                new { rep = "sales-order", name = "sales-order-price", type ="hub"},
+                
+                new { rep = "sales-inventory", name = "sales-inventory", type ="api" }
+            };
+            
+            envs.ForEach(e => names.ForEach(n =>
+            {
+                var w = GetWorkload(ns, e, n.rep, n.name, n.type);
+                workloads.Add(w);
+                if (e == "dev" && n.rep == "sales-order")
+                {
+                    var b1 = GetWorkload(ns, e, n.rep, n.name, n.type, strategy: "branch", head: "feature-fox-1234-important-changes-bla-bla");
+                    workloads.Add(b1);
+                    var b2 = GetWorkload(ns, e, n.rep, n.name, n.type, strategy: "branch", head: "feature-fox-1235-other-changes-bla-bla");
+                    workloads.Add(b2);
+                }
+                
+                if (e == "dev" && n.rep == "sales-inventory")
+                {
+                    var p1 = GetWorkload(ns, e, n.rep, n.name, n.type, strategy: "preview", head: "feature-TRIV-123-my-special-bla-bla");
+                    workloads.Add(p1);
+                }
+            }));
+        }
+
         return workloads;
     }
     
-    private JsonObject GetWorkload(string ns, string env, string repo, string name, string type, bool deploying = false)
+    private JsonObject GetWorkload(string ns, string env, string repo, string name, string type, bool deploying = false, string head = "", string strategy = "")
     {
         var metrics = name == "example" && type == "worker" ? "0" : "1";
         var deployed = DateTimeOffset.Now.AddDays(-Random.Shared.Next(1, 7)).ToUnixTimeSeconds();
@@ -161,6 +193,14 @@ public class FakePrometheusRepository : IPrometheusRepository
             },
             ["value"] = new JsonArray($"{DateTimeOffset.Now.ToUnixTimeSeconds()}", $"{metrics}")
         };
+
+        if (!string.IsNullOrEmpty(head))
+        {
+            var sha = $"{head.GetHashCode():X}".ToLower();
+            tmp["metric"]["aks_name"] = $"{name}-{type}-{sha}";
+            tmp["metric"]["github_head_branch"] = head;
+            tmp["metric"]["aks_strategy"] = strategy;
+        }
         
         return tmp;
     }
