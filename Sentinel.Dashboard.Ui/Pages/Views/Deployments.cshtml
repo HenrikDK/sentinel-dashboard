@@ -207,6 +207,8 @@ let setup = (props, ctx) => {
       
       results.push(repository)
     })
+
+    results.sort((a, b) => (a.display_name < b.display_name ? -1 : 1))
   
     let names = Array.from(new Set(results.map(x => x.space))).sort();
     let gSpaces = [];
