@@ -145,7 +145,7 @@ let setup = (props, ctx) => {
     Object.keys(grouped).sort().forEach(g => {
       let repository_pods = grouped[g];
       let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
-      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();      
+      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name)));
       let repository = {
           'group_name': g,
           'name': repository_pods[0].metric.github_repository,
@@ -198,8 +198,12 @@ let setup = (props, ctx) => {
       
       repository.environments.forEach(e => {
         let missing = repository.workloads.some(w => w[e].metrics === false);
+
+        let selected = repository.workloads.filter(f => f[e].instance !== undefined)
+          .map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
+
         repository.summary[e] = {
-          'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0],
+          'instance': selected,
           'metrics': !missing,
           'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
         }
