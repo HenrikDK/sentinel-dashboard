@@ -6,7 +6,7 @@
         <div class="w-64 overflow-hidden">
           <div v-if="expanded[repository.name]" class="pl-2 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
             <div class="w-60 truncate">
-              <a :href="'https://github.com/' + repository.name" target="_blank" :title="getCleanName(repository)">{{ getCleanName(repository) }}</a>
+              <a :href="'https://github.com/' + repository.name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
             </div>
             <div class="font-bold text-gray-600 hover:text-gray-900 top-0 right-0 cursor-pointer" @@click="$emit('toggle-details', repository.name)">
               <template v-if="!expanded[repository.name]">
@@ -42,7 +42,7 @@
           <div class="flex">
             <div class="sticky left-0 bg-white pl-2 flex items-center w-64">
               <div class="pb-2 text-gray-500 hover:underline hover:text-gray-900 w-60 truncate whitespace-nowrap">
-                <a :href="'https://github.com/' + repository.name" target="_blank" :title="getCleanName(repository)">{{ getCleanName(repository) }}</a>
+                <a :href="'https://github.com/' + repository.name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
               </div>
               <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute top-0 right-0" @@click="$emit('toggle-details', repository.name)">
                 <template v-if="!expanded[repository.name]">
@@ -136,19 +136,7 @@ let setup = () => {
     return link;
   }
   
-  let getCleanName = (repo) => {
-    let name = repo.name.split('/')[1];
-    if (name.startsWith(repo.namespace)){
-      name = name.substring(repo.namespace.length);
-    }
-    if (name.startsWith('-') || name.startsWith('.') || name.startsWith('_')){
-      name = name.substring(1);
-    }
-    
-    return name
-  }
-  
-  return { getPodPortalLink, getCleanName }
+  return { getPodPortalLink }
 }
 
 components["deployment-bar"] = { template: "#deployment-bar", props: ['expanded', 'repository', 'ns', 'live'], setup};
