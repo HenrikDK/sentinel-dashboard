@@ -265,3 +265,82 @@ function getWebsiteLink(value){
 
     return `https://${value.aks_name}-${value.namespace.replace('-', '.')}.${value.aks_space}.azure.dsb.dk/`;
 }
+
+function groupWorkloadsByRepository(deployments, alerts){
+    let grouped = _.groupBy(deployments, x => x.metric.github_org + '/' + x.metric.github_repository)
+              
+    let results = [];
+    Object.keys(grouped).sort().forEach(g => {
+      let repository_pods = grouped[g];
+      let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
+      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name)));
+      let repository = {
+          'group_name': g,
+          'name': repository_pods[0].metric.github_repository,
+          'display_name': repository_pods[0].metric.github_repository,
+          'matched': true,
+          'space': repository_pods[0].metric.aks_space,
+          'namespace': repository_pods[0].metric.namespace.split('-')[0],
+          'environments': environments,
+          'workloads': [],
+          'summary': {}
+      }
+      
+      if (repository.display_name.startsWith(repository.namespace)){
+        repository.display_name = repository.display_name.substring(repository.namespace.length);
+      }
+      if (repository.display_name.startsWith('-') || repository.display_name.startsWith('.') || repository.display_name.startsWith('_')){
+        repository.display_name = repository.display_name.substring(1);
+      }
+      
+      names.forEach(x => {
+        let instances = repository_pods.filter(v => v.metric.aks_name === x)
+        let alarms = alerts.filter(a => a.metric.aks_name === x )
+        
+        let result = {
+          'name': x,
+          'instances': instances,
+        }
+        
+        environments.forEach(e => {
+          let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
+          let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
+          
+          let metrics = true;
+          if (working.length === 0 && missing.length > 0){
+            metrics = false;
+          }
+          
+          let relevant = instances.filter(i => i.metric.aks_environment === e);
+          let most_recent = relevant.sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
+          
+          result[e] = {
+            'instance': most_recent,
+            'metrics': metrics,
+            'alerts': alarms.filter(a => a.metric.aks_environment === e)
+          };
+        })
+        
+        repository.workloads.push(result)
+      });
+      
+      repository.environments.forEach(e => {
+        let missing = repository.workloads.some(w => w[e].metrics === false);
+
+        let selected = repository.workloads.filter(f => f[e].instance !== undefined)
+          .map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
+
+        repository.summary[e] = {
+          'instance': selected,
+          'metrics': !missing,
+          'alerts': alerts.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+        }
+      });
+      
+      results.push(repository)
+    })
+
+    results.sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
+
+    return results;  
+}
