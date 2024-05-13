@@ -247,3 +247,21 @@ function buildDetailMiniChart(json){
     
     return options;
 }
+
+function getPortalLink(value) {
+    if (!value?.aks_environment) return "#";
+    
+    let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
+    let link = `https://skooner.${env}.${value.aks_space}.azure.dsb.dk/#!pod/${value.namespace}/${value.pod}`;
+    return link;
+}
+
+function getWebsiteLink(value){
+    if (!value?.aks_environment) return "#";
+
+    if (value.aks_space == 'ods'){
+        return `https://${value.aks_name}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
+    }
+
+    return `https://${value.aks_name}-${value.namespace.replace('-', '.')}.${value.aks_space}.azure.dsb.dk/`;
+}
