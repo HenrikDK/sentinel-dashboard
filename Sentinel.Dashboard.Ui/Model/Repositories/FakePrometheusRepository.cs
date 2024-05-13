@@ -88,6 +88,7 @@ public class FakePrometheusRepository : IPrometheusRepository
             
             var names = new[]
             {
+                new { rep = "database-replication", name = "database-replication", type ="api" }, 
                 new { rep = "database-replication", name = "database-replication", type ="worker" }, 
                 
                 new { rep = "station", name = "station", type ="api" },
@@ -118,7 +119,7 @@ public class FakePrometheusRepository : IPrometheusRepository
             {
                 var w = GetWorkload(ns, e, n.rep, n.name, n.type);
                 workloads.Add(w);
-                if (n.name == "database-replication" && e == "tst")
+                if (n.name == "database-replication" && n.type == "worker" && e == "tst")
                 {
                     var w2 = GetWorkload(ns, e, n.rep, n.name, n.type, true);
                     workloads.Add(w2);
