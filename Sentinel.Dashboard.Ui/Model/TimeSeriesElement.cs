@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace Sentinel.Dashboard.Ui.Model;
 
 public class TimeSeriesElement
@@ -11,12 +9,12 @@ public class TimeSeriesElement
 
 public class TimeSeriesDto
 {
-    [JsonProperty("_count")]
+    [JsonPropertyName("_count")]
     public string Count { get; set; }
     
-    [JsonProperty("_bucket")]
+    [JsonPropertyName("_bucket")]
     public string Bucket { get; set; }
     
-    [JsonProperty("kubernetes.container.name")]
+    [JsonPropertyName("kubernetes.container.name")]
     public string Name { get; set; } = "";
 }

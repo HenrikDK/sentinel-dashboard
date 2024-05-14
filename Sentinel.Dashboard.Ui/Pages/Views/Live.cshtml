@@ -20,7 +20,7 @@
       </div>
     </template>
     
-    <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid max-w-screen-2xl border-gray-300 w-full"
+    <div class="overflow-hidden bg-white rounded shadow-md my-4 border border-solid max-w-screen-2xl border-gray-300 w-fit"
          aria-label="Spaces">
       <div class="overflow-auto w-fit">
         <div class="bg-gray-200 py-2 h-8 flex rounded-t border-solid border-gray-300 items-center" aria-label="Space header">
@@ -56,7 +56,7 @@
           </template>
           
           <template v-for="a in activity.alerts">
-            <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[a]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+            <deployment-bar :expanded="expanded" :ns="ns" :repository="a" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
           </template>
         </template>
         
@@ -67,7 +67,7 @@
         </template>
         
         <template v-for="w in activity.warnings">
-          <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[w]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+          <deployment-bar :expanded="expanded" :ns="ns" :repository="w" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
         </template>
         
         <template v-if="showHeader() && activity.deploying.length > 0">
@@ -77,7 +77,7 @@
         </template>
         
         <template v-for="d in activity.deploying">
-          <deployment-bar :expanded="expanded" :ns="ns" :repository="repositories[d]" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
+          <deployment-bar :expanded="expanded" :ns="ns" :repository="d" @@toggle-details="(e) => toggleDetails(e)"></deployment-bar>
         </template>
       </div>
     </div>
@@ -127,86 +127,27 @@ let setup = (props, ctx) => {
   }
   
   let updateModel = () => {
-    let grouped = _.groupBy(deployments.value, x => x.metric.github_org + '/' + x.metric.github_repository)
-                
-    let results = {};
-    Object.keys(grouped).sort().forEach(g => {
-      let repository_pods = grouped[g];
-      let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
-      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
-      let summary = {
-          'workloads': names,
-      }
-      
-      let repository = {
-          'name': g,
-          'matched': true,
-          'space': repository_pods[0].metric.aks_space,
-          'namespace': repository_pods[0].metric.namespace.split('-')[0],
-          'environments': environments,
-          'workloads': [],
-          'summary': summary
-      }
-      
-      names.forEach(x => {
-        let instances = repository_pods.filter(v => v.metric.aks_name === x)
-        let alarms = alerts.value.filter(a => a.metric.aks_name === x )
-        
-        let result = {
-          'name': x,
-          'instances': instances, 
-        }
-        
-        environments.forEach(e => {
-          let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
-          let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
-          
-          let metrics = true;
-          if (working.length === 0 && missing.length > 0){
-            metrics = false;
-          }
-          
-          let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
-          
-          result[e] = {
-            'instance': most_recent,
-            'metrics': metrics,
-            'alerts': alarms.filter(a => a.metric.aks_environment === e)
-          };
-        })
-        
-        repository.workloads.push(result)
-      });
-      
-      environments.forEach(e => {
-          let missing = repository.workloads.some(w => w[e].metrics === false);
-          summary[e] = {
-            'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
-            'metrics': !missing,
-            'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
-          }
-      })
-      
-      results[repository.name] = repository;
-    })
+    let results = groupWorkloadsByRepository(deployments.value, alerts.value);
 
-    let gRepositories = Object.entries(results).map(r => r[1]);
-    let combinations = gRepositories.map(x => ({ 'namespace': x.namespace, 'space': x.space}));
+    let combinations = results.map(x => ({ 'namespace': x.namespace, 'space': x.space}));
     combinations = [...new Map(combinations.map(x => [x['namespace'], x])).values()];
     let spacesList = Array.from(new Set(combinations));
     spacesList = sortByKey(spacesList, 'namespace');
     
-    let alarms = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-    alarms = Array.from(new Set(alarms));
+    let alarmNames = alerts.value.map(x => x.metric.github_org + '/' + x.metric.github_repository);
+    alarmNames = Array.from(new Set(alarmNames));
+    let alarms = alarmNames.map(x => results.filter(y => y.group_name === x)[0]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.alerts = alarms;
     
-    let warnings = gRepositories.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.name).sort();
-    warnings = warnings.filter(x => !alarms.includes(x));
+    let warningNames = results.filter(r => Object.entries(r.summary).some(s => s[1]?.metrics === false)).map(x => x.group_name);
+    warningNames = warningNames.filter(x => !alarmNames.includes(x));
+    let warnings = warningNames.map(x => results.filter(y => y.group_name === x)[0]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.warnings = warnings;
     
-    let deploying = deployments.value.filter(x => isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository).sort();
-    deploying = Array.from(new Set(deploying));
-    deploying = deploying.filter(x => !alarms.includes(x) && !warnings.includes(x));
+    let deployingNames = deployments.value.filter(x => isCurrent(x.metric.aks_deployed)).map(x => x.metric.github_org + '/' + x.metric.github_repository);
+    deployingNames = Array.from(new Set(deployingNames));
+    deployingNames = deployingNames.filter(x => !alarmNames.includes(x) && !warningNames.includes(x));
+    let deploying = deployingNames.map(x => results.filter(y => y.group_name === x)[0]).sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
     activity.value.deploying = deploying;
     
     repositories.value = results;

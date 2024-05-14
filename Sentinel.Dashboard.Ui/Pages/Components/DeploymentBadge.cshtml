@@ -34,13 +34,13 @@
            :class="[isCurrent(deployment.instance.metric.aks_deployed) ? 'font-bold' : '']">
         {{ toDateString(deployment.instance.metric.aks_deployed) }}
       </div>
-      <div class="text-xs w-40 truncate font-bold text-gray-500">{{ deployment.instance.metric.github_branch }}</div>
+      <div class="text-xs w-40 truncate font-bold text-gray-500">{{ deployment.instance.metric.github_head_branch ?? deployment.instance.metric.github_branch }}</div>
     </div>
   </div>
 </template>
 
 <script type="module">
-let setup = () => {
+let setup = (props, ctx) => {
   let toDateString = (value) => {
     const now = luxon.DateTime.local();
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');

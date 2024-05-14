@@ -19,6 +19,7 @@ builder.WebHost.ConfigureKestrel(x => x.ListenAnyIP(8090))
     .ConfigureServices(c =>
     {
         c.AddMemoryCache();
+        c.AddHealthChecks();
         c.AddRazorPages(options =>
         {
             options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
@@ -56,6 +57,7 @@ app.UseRouting();
 app.UseAuthorization();
 app.MapRazorPages();
 app.MapMetrics();
+app.MapHealthChecks("/healthz");
 app.MapControllers();
 
 app.Run();

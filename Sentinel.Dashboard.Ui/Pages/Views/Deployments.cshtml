@@ -27,7 +27,7 @@
          
           <div class="bg-gray-200 h-8 flex rounded-t border-solid border-gray-300"
                aria-label="Space header">
-            <div class="w-64">
+            <div class="w-64 flex">
               <tooltip placement="right">
                 <template v-slot:cell>
                   <div class="ml-1 font-bold text-gray-600 p-0.5 rounded border border-gray-200 truncate max-w-[15rem] hover:border-sky-600 hover:text-sky-800 hover:bg-sky-200/[.3]">
@@ -139,68 +139,7 @@ let setup = (props, ctx) => {
   }
 
   let updateModel = () => {
-    let grouped = _.groupBy(deployments.value, x => x.metric.github_org + '/' + x.metric.github_repository)
-              
-    let results = [];
-    Object.keys(grouped).sort().forEach(g => {
-      let repository_pods = grouped[g];
-      let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
-      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name))).sort();
-      let summary = {
-          'workloads': names,
-      }
-      
-      let repository = {
-          'name': g,
-          'matched': true,
-          'space': repository_pods[0].metric.aks_space,
-          'namespace': repository_pods[0].metric.namespace.split('-')[0],
-          'environments': environments,
-          'workloads': [],
-          'summary': summary
-      }
-      
-      names.forEach(x => {
-        let instances = repository_pods.filter(v => v.metric.aks_name === x)
-        let alarms = alerts.value.filter(a => a.metric.aks_name === x )
-        
-        let result = {
-          'name': x,
-          'instances': instances,
-        }
-        
-        environments.forEach(e => {
-          let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
-          let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
-          
-          let metrics = true;
-          if (working.length === 0 && missing.length > 0){
-            metrics = false;
-          }
-          
-          let most_recent = instances.filter(i => i.metric.aks_environment === e).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0]
-          
-          result[e] = {
-            'instance': most_recent,
-            'metrics': metrics,
-            'alerts': alarms.filter(a => a.metric.aks_environment === e)
-          };
-        })
-        
-        repository.workloads.push(result)
-      });
-      
-      environments.forEach(e => {
-          let missing = repository.workloads.some(w => w[e].metrics === false);
-          summary[e] = {
-            'instance': repository.workloads.map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1))[0],
-            'metrics': !missing,
-            'alerts': alerts.value.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
-          }
-      })
-      
-      results.push(repository)
-    })
+    let results = groupWorkloadsByRepository(deployments.value, alerts.value);
   
     let names = Array.from(new Set(results.map(x => x.space))).sort();
     let gSpaces = [];

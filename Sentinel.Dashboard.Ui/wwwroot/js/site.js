@@ -26,6 +26,15 @@
     return output
 }
 
+function sortByKey(array, key) {
+    if (array.length == 0) return [];
+    
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
 function overviewChartFormatter(params) {
     output = '<div>' + params[0].name
     events = params.reduce((a, b) => +a + +b.value, 0)
@@ -237,4 +246,140 @@ function buildDetailMiniChart(json){
     }
     
     return options;
+}
+
+function getPortalLink(value) {
+    if (!value?.aks_environment) return "#";
+    
+    let env = value.aks_environment === 'prd' ? 'prd' : 'tst';
+    let link = `https://skooner.${env}.${value.aks_space}.azure.dsb.dk/#!pod/${value.namespace}/${value.pod}`;
+    return link;
+}
+
+function getWebsiteLink(value){
+    if (!value?.aks_environment) return "#";
+
+    let strategy = value.aks_strategy !== undefined && value.aks_strategy !== 'default'
+
+    let name = value.aks_name;
+    if (strategy){
+        name = name.substring(0, name.indexOf(value.aks_type) + value.aks_type.length);
+    }
+    let result = `https://${name}-${value.namespace.replace('-', '.')}.${value.aks_space}.azure.dsb.dk/`;
+    if (value.aks_space == 'ods'){ 
+        result = `https://${name}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
+        if (strategy){
+            result = `https://${name}-${value.github_head_branch}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
+        }
+    }
+    else if (strategy){
+        let namespace = value.namespace.replace(`-${value.aks_environment}`, '');
+        result = `https://${name}-${namespace}-${value.github_head_branch}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
+    }
+
+    return result;
+}
+
+function groupWorkloadsByRepository(deployments, alerts){
+    let grouped = _.groupBy(deployments, x => x.metric.github_org + '/' + x.metric.github_repository)
+              
+    let results = [];
+    Object.keys(grouped).sort().forEach(g => {
+      let repository_pods = grouped[g];
+      let environments = Array.from(new Set(repository_pods.map(x => x.metric.aks_environment)));
+      let names = Array.from(new Set(repository_pods.map(x => x.metric.aks_name)));
+      let strategy = repository_pods.filter(s => s.metric.aks_strategy !== undefined)[0]?.metric.aks_strategy ?? 'default';
+      let repository = {
+          'group_name': g,
+          'name': repository_pods[0].metric.github_repository,
+          'display_name': repository_pods[0].metric.github_repository,
+          'matched': true,
+          'strategy': strategy,
+          'space': repository_pods[0].metric.aks_space,
+          'namespace': repository_pods[0].metric.namespace.split('-')[0],
+          'environments': environments,
+          'workloads': [],
+          'sub_environments': [],
+          'summary': {}
+      }
+      
+      if (repository.display_name.startsWith(repository.namespace)){
+        repository.display_name = repository.display_name.substring(repository.namespace.length);
+      }
+      if (repository.display_name.startsWith('-') || repository.display_name.startsWith('.') || repository.display_name.startsWith('_')){
+        repository.display_name = repository.display_name.substring(1);
+      }
+      
+      names.forEach(x => {
+        let instances = repository_pods.filter(v => v.metric.aks_name === x)
+        let alarms = alerts.filter(a => a.metric.aks_name === x )
+        
+        let first = instances[0];
+        let result = {
+          'name': x,
+          'strategy': first.metric.aks_strategy ?? 'default',
+          'deployed': first.metric.aks_deployed ?? '0',
+          'head_branch': first.metric.github_head_branch ?? first.metric.github_branch,
+          'instances': instances,
+        }
+        
+        environments.forEach(e => {
+          let working = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '1');
+          let missing = instances.filter(i => i.metric.aks_environment === e && i.value[1] === '0');
+          
+          let metrics = true;
+          if (working.length === 0 && missing.length > 0){
+            metrics = false;
+          }
+          
+          let relevant = instances.filter(i => i.metric.aks_environment === e);
+          let most_recent = relevant.sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
+          
+          result[e] = {
+            'instance': most_recent,
+            'metrics': metrics,
+            'alerts': alarms.filter(a => a.metric.aks_environment === e)
+          };
+        })
+        
+        repository.workloads.push(result)
+      });
+      
+      repository.environments.forEach(e => {
+        let missing = repository.workloads.some(w => w[e].metrics === false);
+
+        let selected = repository.workloads.filter(f => f[e].instance !== undefined)
+          .map(w => w[e].instance).sort((a, b) => (a.metric.aks_deployed < b.metric.aks_deployed ? -1 : 1)).reverse()[0]
+
+        repository.summary[e] = {
+          'instance': selected,
+          'metrics': !missing,
+          'alerts': alerts.filter(a => (a.metric.github_org + '/' + a.metric.github_repository) === g && a.metric.aks_environment === e)
+        }
+      });
+
+      if (repository.strategy !== 'default'){
+        let subs_groups = Array.from(new Set(repository.workloads.map(w => w.head_branch)));
+
+        subs_groups.forEach(sg =>{
+            let sub_workloads = repository.workloads.filter(w => w.head_branch === sg);
+            let group = {
+                'deployed': sub_workloads[0].deployed,
+                'strategy': sub_workloads[0].strategy,
+                'head_branch': sg,
+                'workloads': sub_workloads
+            }
+            
+            repository.sub_environments.push(group);
+        })
+
+        repository.sub_environments.sort((a, b) => (a.deployed < b.deployed ? -1 : 1)).reverse();
+      }
+      
+      results.push(repository)
+    })
+
+    results.sort((a, b) => (a.display_name < b.display_name ? -1 : 1));
+
+    return results;  
 }

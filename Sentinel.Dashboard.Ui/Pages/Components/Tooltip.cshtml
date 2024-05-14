@@ -1,42 +1,66 @@
 <template id="tooltip">
-  <div ref="anchor" class="inline-block" :class="padding" @@mouseenter="show" @@mouseleave="hide">
+  <div ref="anchor" :class="padding" @@mouseenter="enter">
     <slot name="cell"/>
   </div>
-  <div v-if="visible" ref="floating" :style="floatingStyles" role="tooltip" 
-       class="items-center z-50 rounded-md shadow-lg p-2 text-black bg-gray-100">
-    <div class="inline-block">
-      <slot name="tooltip"/>
-    </div>
-    
-    <div v-if="visible" ref="arrowRef" :style="arrowStyles" class="absolute bg-gray-100 h-3 w-3 rotate-45 z-40"></div>
+
+  <div v-if="visible" ref="floating" :style="floatingStyles" role="tooltip" @@mouseleave="leave"
+       class="items-center rounded-md shadow-lg p-2 
+            text-black bg-gray-100 z-50">
+    <transition
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+      enter-active-class="transition duration-100"
+      leave-active-class="transition duration-100"
+    >
+      <div class="inline-block">
+        <slot name="tooltip"/>
+      </div>
+    </transition>
   </div>
+
 </template>
 
 <script type="module">
-import { offset, flip, shift, arrow } from "@@floating-ui/dom";
+import { offset, flip, shift } from "@@floating-ui/dom";
 import { useFloating, autoUpdate } from "@@floating-ui/vue";
 import { ref, computed } from 'vue';
 
 let setup = (props, ctx) =>{
   const anchor = ref(null);
   const floating = ref(null);
-  const arrowRef = ref(null);
   const visible = ref(false);
   const offsetAmount = 8;
 
-  let hide = async (e) => {
-    visible.value = false;
+  let leave = async (e) => {
+      setTimeout(() => hide(e), 150);
   }
 
-  let show = async (e) => {
-    visible.value = true;
+  let hide = async (e) => {
+    if (anchor.value?.matches(':hover') || floating.value?.matches(':hover')) return;
+
+    visible.value = false;
+    
+    anchor.value.removeEventListener('mouseleave', leave);
+  }
+
+  let enter = async (e) => {
+      setTimeout(() => show(e), 500);
+  }
+  
+  let show = (e) => {
+      if (!anchor.value?.matches(':hover')) {
+          return;
+      }
+      
+      visible.value = true
+      
+      anchor.value.addEventListener('mouseleave', leave);                  
   }
   
   const middleware = ref([
     offset(offsetAmount), 
     flip(), 
-    shift(),
-    arrow({ element: arrowRef.value }),
+    shift()
   ]);
   
   const {x, y, strategy, placement, middlewareData } = useFloating(anchor, floating, 
@@ -52,32 +76,7 @@ let setup = (props, ctx) =>{
     left: `${x.value ?? 0}px`
   }));
   
-  /* arrow */
-  const arrowStyles = computed(() => {
-    const side = placement.value.split('-')[0];
-    const arrowSide = {
-      top: 'bottom', right: 'left', bottom: 'top', left: 'right',
-    }[side];
-    
-    const arrowPos = {
-      top: 'left', bottom: 'left', left:'top', right:'top'
-    }[side];
-    
-    let shiftPos = arrowPos === 'left' ? floating.value?.clientWidth : floating.value?.clientHeight;
-    if (shiftPos){
-      shiftPos = shiftPos - 16; // tailwind p-2 = 8px on each side
-    }
-
-    const ar = middlewareData.arrow;
-    
-    return {
-      [arrowPos]: `${(shiftPos ?? 0) / 2}px`,
-      [arrowSide]: `${-offsetAmount/2}px`,
-    };
-  });
-  
-  
-  return {visible, anchor, floating, arrowRef, show, hide, floatingStyles, arrowStyles}
+  return {visible, anchor, floating, enter, show, leave, hide, floatingStyles}
 }
 
 components["tooltip"] = { template: "#tooltip",
