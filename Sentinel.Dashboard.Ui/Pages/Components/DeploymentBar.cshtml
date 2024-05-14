@@ -2,14 +2,14 @@
   <div class="overflow-auto w-fit">
     <div>
       <!-- header -->
-      <div v-if="expanded[repository.name]" class="bg-white h-6 items-center flex">
+      <div v-if="expanded[repository.group_name]" class="bg-white h-6 items-center flex">
         <div class="w-64 overflow-hidden">
-          <div v-if="expanded[repository.name]" class="pl-2 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
+          <div v-if="expanded[repository.group_name]" class="pl-2 text-gray-500 hover:text-gray-900 hover:underline relative justify-between flex">
             <div class="w-60 truncate">
-              <a :href="'https://github.com/' + repository.name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
+              <a :href="'https://github.com/' + repository.group_name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
             </div>
-            <div class="font-bold text-gray-600 hover:text-gray-900 top-0 right-0 cursor-pointer" @@click="$emit('toggle-details', repository.name)">
-              <template v-if="!expanded[repository.name]">
+            <div class="font-bold text-gray-600 hover:text-gray-900 top-0 right-0 cursor-pointer" @@click="$emit('toggle-details', repository.group_name)">
+              <template v-if="!expanded[repository.group_name]">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
                 </svg>
@@ -27,7 +27,7 @@
                class="pl-3 w-56">
             <div class="flex justify-between">
               <div class="uppercase text-gray-500 hover:text-gray-900 hover:underline">
-                <a :href="'https://github.com/'+ repository.name + '/deployments/activity_log?environment=' + e" target="_blank">
+                <a :href="'https://github.com/'+ repository.group_name + '/deployments/activity_log?environment=' + e" target="_blank">
                   {{ e }}
                 </a>
               </div>
@@ -38,14 +38,14 @@
 
       <!-- body -->
       <div class="border-b border-solid border-gray-300 py-0.5">
-        <template v-if="!expanded[repository.name]">
+        <template v-if="!expanded[repository.group_name]">
           <div class="flex">
             <div class="sticky left-0 bg-white pl-2 flex items-center w-64">
               <div class="pb-2 text-gray-500 hover:underline hover:text-gray-900 w-60 truncate whitespace-nowrap">
-                <a :href="'https://github.com/' + repository.name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
+                <a :href="'https://github.com/' + repository.group_name" target="_blank" :title="repository.display_name">{{ repository.display_name }}</a>
               </div>
-              <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute top-0 right-0" @@click="$emit('toggle-details', repository.name)">
-                <template v-if="!expanded[repository.name]">
+              <div class="font-bold text-gray-600 hover:text-gray-900 cursor-pointer absolute top-0 right-0" @@click="$emit('toggle-details', repository.group_name)">
+                <template v-if="!expanded[repository.group_name]">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
                   </svg>
