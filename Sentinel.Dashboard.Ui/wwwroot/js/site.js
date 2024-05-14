@@ -259,18 +259,20 @@ function getPortalLink(value) {
 function getWebsiteLink(value){
     if (!value?.aks_environment) return "#";
 
+    let strategy = value.aks_strategy !== undefined && value.aks_strategy !== 'default'
+
     let name = value.aks_name;
-    if (value.strategy != 'default'){
+    if (strategy){
         name = name.substring(0, name.indexOf(value.aks_type) + value.aks_type.length);
     }
     let result = `https://${name}-${value.namespace.replace('-', '.')}.${value.aks_space}.azure.dsb.dk/`;
     if (value.aks_space == 'ods'){ 
         result = `https://${name}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
-        if (value.strategy != 'default'){
+        if (strategy){
             result = `https://${name}-${value.github_head_branch}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
         }
     }
-    else if (value.strategy != 'default'){
+    else if (strategy){
         let namespace = value.namespace.replace(`-${value.aks_environment}`, '');
         result = `https://${name}-${namespace}-${value.github_head_branch}.${value.aks_environment}.${value.aks_space}.azure.dsb.dk/`;
     }
