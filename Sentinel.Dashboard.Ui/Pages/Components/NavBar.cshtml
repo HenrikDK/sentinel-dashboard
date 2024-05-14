@@ -67,7 +67,7 @@
 <script type="module">
 import { useRoute } from 'vue-router'
 
-let setup = (props) =>{
+let setup = (props, ctx) =>{
   const route = useRoute()
   
   function getNavLink(type){
