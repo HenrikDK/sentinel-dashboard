@@ -36,7 +36,7 @@ let setup = (props, ctx) =>{
   }
 
   let hide = async (e) => {
-    if (anchor.value.matches(':hover') || floating.value?.matches(':hover')) return;
+    if (anchor.value?.matches(':hover') || floating.value?.matches(':hover')) return;
 
     visible.value = false;
     
@@ -48,7 +48,7 @@ let setup = (props, ctx) =>{
   }
   
   let show = (e) => {
-      if (!anchor.value.matches(':hover')) {
+      if (!anchor.value?.matches(':hover')) {
           return;
       }
       
