@@ -40,7 +40,7 @@
 </template>
 
 <script type="module">
-let setup = () => {
+let setup = (props, ctx) => {
   let toDateString = (value) => {
     const now = luxon.DateTime.local();
     const past = luxon.DateTime.fromSeconds(Number(value)).setLocale('da-dk');
